@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PC Building Simulator - ASSEMBLY</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🖥️ ASSEMBLY PC</h1>
+            <p>Professional PC Building Simulator - Drag & Drop, Compatibility Checking, Complete Specs</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Left Panel: Component Selection -->
+            <div class="left-panel">
+                <div class="component-selector">
+                    <h2>Component Library</h2>
+                    
+                    <!-- Category Tabs -->
+                    <div class="category-tabs">
+                        <button class="category-btn active" data-category="cpu">CPU</button>
+                        <button class="category-btn" data-category="motherboard">Motherboard</button>
+                        <button class="category-btn" data-category="ram">RAM</button>
+                        <button class="category-btn" data-category="gpu">GPU</button>
+                        <button class="category-btn" data-category="storage">Storage</button>
+                        <button class="category-btn" data-category="psu">PSU</button>
+                        <button class="category-btn" data-category="case">Case</button>
+                        <button class="category-btn" data-category="cooler">Cooler</button>
+                    </div>
+
+                    <!-- Components List -->
+                    <div class="components-list" id="componentsList">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center Panel: 2D Simulator -->
+            <div class="center-panel">
+                <div class="simulator-container">
+                    <h2>PC Build Assembly</h2>
+                    <p class="drag-hint">💡 Drag components from the left panel onto the canvas</p>
+                    <canvas id="pcCanvas" width="600" height="700"></canvas>
+                    <div class="canvas-info">
+                        <p>🖱️ Hover over slots to see them light up • Drag to install components</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Build Info -->
+            <div class="right-panel">
+                <div class="build-info">
+                    <h2>Build Information</h2>
+                    
+                    <!-- Selected Components -->
+                    <div class="selected-components">
+                        <h3>Selected Components</h3>
+                        <div class="component-slot" data-slot="motherboard">
+                            <span class="slot-name">Motherboard:</span>
+                            <span class="slot-value">Not selected</span>
+                            <button class="remove-btn" title="Remove">✕</button>
+                        </div>
+                        <div class="component-slot" data-slot="cpu">
+                            <span class="slot-name">CPU:</span>
+                            <span class="slot-value">Not selected</span>
+                            <button class="remove-btn" title="Remove">✕</button>
+                        </div>
+                        <div class="component-slot" data-slot="cooler">
+                            <span class="slot-name">Cooler:</span>
+                            <span class="slot-value">Not selected</span>
+                            <button class="remove-btn" title="Remove">✕</button>
+                        </div>
+                        <div class="component-slot" data-slot="ram">
+                            <span class="slot-name">RAM:</span>
+                            <span class="slot-value">Not selected</span>
+                            <button class="remove-btn" title="Remove">✕</button>
+                        </div>
+                        <div class="component-slot" data-slot="gpu">
+                            <span class="slot-name">GPU:</span>
+                            <span class="slot-value">Not selected</span>
+                            <button class="remove-btn" title="Remove">✕</button>
+                        </div>
+                        <div class="component-slot" data-slot="storage">
+                            <span class="slot-name">Storage:</span>
+                            <span class="slot-value">Not selected</span>
+                            <button class="remove-btn" title="Remove">✕</button>
+                        </div>
+                        <div class="component-slot" data-slot="psu">
+                            <span class="slot-name">PSU:</span>
+                            <span class="slot-value">Not selected</span>
+                            <button class="remove-btn" title="Remove">✕</button>
+                        </div>
+                        <div class="component-slot" data-slot="case">
+                            <span class="slot-name">Case:</span>
+                            <span class="slot-value">Not selected</span>
+                            <button class="remove-btn" title="Remove">✕</button>
+                        </div>
+                    </div>
+
+                    <!-- Compatibility Check -->
+                    <div class="compatibility-section">
+                        <h3>Compatibility</h3>
+                        <div id="compatibilityStatus" class="compatibility-status compatible">
+                            ✓ All components compatible
+                        </div>
+                        <div id="compatibilityIssues" class="compatibility-issues">
+                            <!-- Issues listed here -->
+                        </div>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="build-stats">
+                        <h3>Build Stats</h3>
+                        <div class="stat-item">
+                            <span class="stat-label">Total Price:</span>
+                            <span class="stat-value" id="totalPrice">$0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Power Consumption:</span>
+                            <span class="stat-value" id="powerConsumption">0W</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Total RAM:</span>
+                            <span class="stat-value" id="totalRam">0GB</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Storage:</span>
+                            <span class="stat-value" id="totalStorage">0GB</span>
+                        </div>
+                    </div>
+
+                    <!-- Build Actions -->
+                    <div class="build-actions">
+                        <button id="saveBuildBtn" class="btn btn-primary">Save Build</button>
+                        <button id="clearBuildBtn" class="btn btn-secondary">Clear All</button>
+                        <button id="loadBuildBtn" class="btn btn-secondary">Load Build</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Component Details Modal -->
+    <div id="componentModal" class="modal">
+        <div class="modal-content modal-lg">
+            <span class="close">&times;</span>
+            <div id="componentDetailsHeader" class="component-details-header">
+                <!-- Header will be filled dynamically -->
+            </div>
+            <div id="componentDetailsSpecs" class="component-specs-grid">
+                <!-- Specs will be filled dynamically -->
+            </div>
+            <button id="addComponentBtn" class="btn btn-primary">Add to Build</button>
+        </div>
+    </div>
+
+    <!-- Save Build Modal -->
+    <div id="saveBuildModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Save Your Build</h2>
+            <input type="text" id="buildNameInput" placeholder="Enter build name (optional)">
+            <button id="confirmSaveBtn" class="btn btn-primary">Save</button>
+        </div>
+    </div>
+
+    <!-- Load Build Modal -->
+    <div id="loadBuildModal" class="modal">
+        <div class="modal-content modal-lg">
+            <span class="close">&times;</span>
+            <h2>Load a Saved Build</h2>
+            <div id="buildsList" class="builds-list">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/simulator.js"></script>
+</body>
+</html>

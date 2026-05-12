@@ -1,0 +1,1501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Assembly PC — Learn to Build Your Own PCs</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --green: #3ecf5e;
+      --green-dark: #28a745;
+      --green-dim: rgba(62, 207, 94, 0.12);
+      --navy: #0d1b2e;
+      --navy-mid: #112240;
+      --navy-light: #1a2f4a;
+      --text-white: #f0f4f8;
+      --text-muted: #7a9ab5;
+      --bg-light: #f4f6f8;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #fff;
+      color: #1a202c;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 48px;
+      height: 64px;
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: #0d1b2e;
+    }
+
+    .logo-box {
+      width: 34px; height: 34px;
+      background: var(--green);
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .logo-box svg { width: 18px; height: 18px; }
+
+    .logo-name {
+      font-family: 'Sora', sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      color: #0d1b2e;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #4a5568;
+      text-decoration: none;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .nav-link svg { width: 15px; height: 15px; flex-shrink: 0; }
+    .nav-link:hover { background: #f0fdf4; color: #1a202c; }
+    .nav-link.active { background: var(--green); color: #fff; }
+    .nav-link.active:hover { background: var(--green-dark); }
+
+    .nav-guest {
+      font-size: 14px;
+      color: #a0aec0;
+      font-weight: 400;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      background: var(--navy);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      text-align: center;
+      padding: 120px 48px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 50% 0%, rgba(62,207,94,0.08) 0%, transparent 70%),
+        radial-gradient(ellipse 80% 60% at 20% 80%, rgba(62,207,94,0.05) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    /* subtle grid lines */
+    .hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(62,207,94,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(62,207,94,0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
+
+    .hero-inner {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      animation: fadeUp 0.8s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(62,207,94,0.12);
+      border: 1px solid rgba(62,207,94,0.3);
+      color: var(--green);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 6px 16px;
+      border-radius: 100px;
+      animation: fadeUp 0.8s 0.1s ease both;
+    }
+
+    .hero-icon-wrap {
+      width: 80px; height: 80px;
+      background: rgba(62,207,94,0.1);
+      border: 1.5px solid rgba(62,207,94,0.25);
+      border-radius: 22px;
+      display: flex; align-items: center; justify-content: center;
+      animation: fadeUp 0.8s 0.15s ease both;
+    }
+
+    .hero-icon-wrap svg { width: 38px; height: 38px; }
+
+    .hero h1 {
+      font-family: 'Sora', sans-serif;
+      font-size: 64px;
+      font-weight: 800;
+      color: var(--text-white);
+      line-height: 1.1;
+      max-width: 780px;
+      letter-spacing: -1.5px;
+      animation: fadeUp 0.8s 0.2s ease both;
+    }
+
+    .hero h1 span { color: var(--green); }
+
+    .hero p {
+      font-size: 18px;
+      color: var(--text-muted);
+      max-width: 540px;
+      line-height: 1.75;
+      animation: fadeUp 0.8s 0.3s ease both;
+    }
+
+    .hero-btns {
+      display: flex;
+      gap: 16px;
+      margin-top: 8px;
+      animation: fadeUp 0.8s 0.4s ease both;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      background: var(--green);
+      color: #fff;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: 'Sora', sans-serif;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(62,207,94,0.3);
+    }
+
+    .btn-primary:hover {
+      background: var(--green-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 28px rgba(62,207,94,0.4);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      background: transparent;
+      color: #fff;
+      border: 1.5px solid rgba(255,255,255,0.3);
+      padding: 14px 28px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: 'Sora', sans-serif;
+      cursor: pointer;
+      text-decoration: none;
+      transition: border-color 0.2s, background 0.2s, transform 0.15s;
+    }
+
+    .btn-secondary:hover {
+      border-color: rgba(255,255,255,0.6);
+      background: rgba(255,255,255,0.06);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary svg, .btn-secondary svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+
+
+    /* ── FEATURES ── */
+    .features {
+      background: var(--bg-light);
+      padding: 100px 48px;
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    .section-label {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--green-dark);
+      margin-bottom: 14px;
+    }
+
+    .section-header h2 {
+      font-family: 'Sora', sans-serif;
+      font-size: 38px;
+      font-weight: 700;
+      color: #0d1b2e;
+      letter-spacing: -0.5px;
+      margin-bottom: 12px;
+    }
+
+    .section-header p {
+      font-size: 16px;
+      color: #718096;
+      max-width: 480px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .feature-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 24px;
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+      border-color: rgba(62,207,94,0.3);
+    }
+
+    .card-icon-wrap {
+      width: 48px; height: 48px;
+      background: #f0fdf4;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .card-icon-wrap svg { width: 22px; height: 22px; }
+
+    .feature-card h3 {
+      font-family: 'Sora', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: #1a202c;
+      margin-bottom: 10px;
+    }
+
+    .feature-card p {
+      font-size: 14px;
+      color: #718096;
+      line-height: 1.7;
+    }
+
+    /* ── HOW IT WORKS ── */
+    .how-it-works {
+      background: var(--navy);
+      padding: 100px 48px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .how-it-works::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 50% 80% at 80% 50%, rgba(62,207,94,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .how-it-works .section-header h2 { color: var(--text-white); }
+    .how-it-works .section-header p { color: var(--text-muted); }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+      max-width: 1000px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 2;
+    }
+
+    .step-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 36px 28px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .step-card:hover {
+      border-color: rgba(62,207,94,0.3);
+      background: rgba(62,207,94,0.04);
+    }
+
+    .step-number {
+      font-family: 'Sora', sans-serif;
+      font-size: 48px;
+      font-weight: 800;
+      color: rgba(62,207,94,0.2);
+      line-height: 1;
+      margin-bottom: 20px;
+    }
+
+    .step-card h3 {
+      font-family: 'Sora', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-white);
+      margin-bottom: 10px;
+    }
+
+    .step-card p {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    /* ── CTA ── */
+    .cta-section {
+      background: #fff;
+      padding: 100px 48px;
+      text-align: center;
+    }
+
+    .cta-inner {
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    .cta-inner h2 {
+      font-family: 'Sora', sans-serif;
+      font-size: 42px;
+      font-weight: 700;
+      color: #0d1b2e;
+      margin-bottom: 16px;
+      letter-spacing: -0.5px;
+    }
+
+    .cta-inner h2 span { color: var(--green-dark); }
+
+    .cta-inner p {
+      font-size: 16px;
+      color: #718096;
+      line-height: 1.7;
+      margin-bottom: 36px;
+    }
+
+    .cta-btns {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+    }
+
+    .btn-dark {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      background: var(--navy);
+      color: #fff;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: 'Sora', sans-serif;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .btn-dark:hover { background: #1a2f4a; transform: translateY(-1px); }
+    .btn-dark svg { width: 16px; height: 16px; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--navy);
+      border-top: 1px solid rgba(255,255,255,0.07);
+      padding: 32px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .footer-logo-name {
+      font-family: 'Sora', sans-serif;
+      font-weight: 600;
+      font-size: 15px;
+      color: var(--text-white);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 28px;
+    }
+
+    .footer-links a {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .footer-links a:hover { color: var(--green); }
+
+    .footer-copy {
+      font-size: 13px;
+      color: #4a6480;
+    }
+
+    /* ── NAV AUTH BUTTON ── */
+    .nav-auth-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--navy);
+      color: #fff;
+      border: none;
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: 'Sora', sans-serif;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.15s;
+    }
+    .nav-auth-btn:hover { background: var(--navy-light); transform: translateY(-1px); }
+
+    /* ── MODAL OVERLAY ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      background: rgba(13, 27, 46, 0.7);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    /* ── MODAL BOX ── */
+    .modal-box {
+      background: #fff;
+      border-radius: 20px;
+      padding: 40px 44px;
+      width: 100%;
+      max-width: 440px;
+      position: relative;
+      transform: translateY(20px) scale(0.97);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.18);
+    }
+    .modal-overlay.open .modal-box {
+      transform: translateY(0) scale(1);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 16px; right: 16px;
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      border: none;
+      background: #f4f6f8;
+      color: #718096;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s, color 0.15s;
+    }
+    .modal-close:hover { background: #e2e8f0; color: #1a202c; }
+
+    .modal-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    /* ── TABS ── */
+    .modal-tabs {
+      display: flex;
+      background: #f4f6f8;
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 28px;
+    }
+    .modal-tab {
+      flex: 1;
+      padding: 9px;
+      border: none;
+      background: transparent;
+      border-radius: 7px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'Sora', sans-serif;
+      color: #718096;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+    }
+    .modal-tab.active {
+      background: #fff;
+      color: #0d1b2e;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+
+    /* ── FORM ── */
+    .modal-title-block { margin-bottom: 24px; }
+    .modal-title-block h2 {
+      font-family: 'Sora', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #0d1b2e;
+      margin-bottom: 4px;
+    }
+    .modal-title-block p { font-size: 14px; color: #718096; }
+
+    .modal-form.hidden { display: none; }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: #4a5568;
+      margin-bottom: 6px;
+    }
+    .input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .input-wrap svg:first-child {
+      position: absolute;
+      left: 12px;
+      color: #a0aec0;
+      pointer-events: none;
+      flex-shrink: 0;
+    }
+    .input-wrap input {
+      width: 100%;
+      padding: 11px 14px 11px 38px;
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      color: #1a202c;
+      background: #fff;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .input-wrap input:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(62,207,94,0.12);
+    }
+    .input-wrap input::placeholder { color: #cbd5e0; }
+
+    .toggle-pass {
+      position: absolute;
+      right: 12px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #a0aec0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      transition: color 0.15s;
+    }
+    .toggle-pass:hover { color: #4a5568; }
+
+    .form-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .form-row-half {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #4a5568;
+      cursor: pointer;
+    }
+    .checkbox-label input[type="checkbox"] {
+      width: 15px; height: 15px;
+      accent-color: var(--green);
+      cursor: pointer;
+    }
+    .forgot-link {
+      font-size: 13px;
+      color: var(--green-dark);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .forgot-link:hover { text-decoration: underline; }
+
+    .btn-modal-submit {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      background: var(--green);
+      color: #fff;
+      border: none;
+      padding: 13px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: 'Sora', sans-serif;
+      cursor: pointer;
+      margin-top: 4px;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 4px 16px rgba(62,207,94,0.3);
+    }
+    .btn-modal-submit:hover {
+      background: var(--green-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 22px rgba(62,207,94,0.4);
+    }
+
+    .modal-switch {
+      text-align: center;
+      font-size: 13px;
+      color: #718096;
+      margin-top: 18px;
+    }
+    .modal-switch a {
+      color: var(--green-dark);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .modal-switch a:hover { text-decoration: underline; }
+
+    /* ── ROLE SELECTION ── */
+    .role-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .role-card {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 18px 20px;
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      background: #fff;
+      cursor: pointer;
+      text-align: left;
+      transition: border-color 0.2s, background 0.2s, transform 0.15s, box-shadow 0.2s;
+      width: 100%;
+    }
+    .role-card:hover {
+      border-color: var(--green);
+      background: #f0fdf4;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(62,207,94,0.12);
+    }
+    .role-icon {
+      width: 52px; height: 52px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .role-icon-student { background: #e8f5e9; color: #28a745; }
+    .role-icon-instructor { background: #e3f2fd; color: #1565c0; }
+    .role-label {
+      font-family: 'Sora', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: #0d1b2e;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .role-desc {
+      font-size: 13px;
+      color: #718096;
+      line-height: 1.4;
+    }
+    .role-card > div:not(.role-icon):not(.role-arrow) {
+      flex: 1;
+    }
+    .role-arrow {
+      color: #a0aec0;
+      flex-shrink: 0;
+      transition: transform 0.15s, color 0.15s;
+    }
+    .role-card:hover .role-arrow { transform: translateX(3px); color: var(--green); }
+
+    /* ── FORM TOPBAR ── */
+    .form-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f4f6f8;
+      border: none;
+      border-radius: 8px;
+      padding: 7px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #4a5568;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.15s, color 0.15s;
+    }
+    .back-btn:hover { background: #e2e8f0; color: #1a202c; }
+    .role-badge {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 100px;
+    }
+    .role-badge.student { background: #e8f5e9; color: #1a6b2f; }
+    .role-badge.instructor { background: #e3f2fd; color: #1040a0; }
+
+    /* ── FLOATING HELP ── */
+    .help-btn {
+      position: fixed;
+      bottom: 28px; right: 28px;
+      width: 44px; height: 44px;
+      background: var(--green);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(62,207,94,0.4);
+      z-index: 200;
+      border: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .help-btn:hover { transform: scale(1.1); box-shadow: 0 6px 24px rgba(62,207,94,0.5); }
+    .help-btn span { font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #fff; line-height: 1; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="#" class="nav-logo">
+      <div class="logo-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+        </svg>
+      </div>
+      <span class="logo-name">Assembly PC</span>
+    </a>
+
+    <div class="nav-links">
+      <a href="#" class="nav-link active">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        Home
+      </a>
+      <a href="#" class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+        Gallery
+      </a>
+      <a href="#" class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        Simulator
+      </a>
+      <a href="#" class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Quiz
+      </a>
+    </div>
+
+    <button class="nav-auth-btn" onclick="openModal('login')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Login / Sign Up
+    </button>
+  </nav>
+
+  <!-- ── AUTH MODAL ── -->
+  <div class="modal-overlay" id="authModal" onclick="handleOverlayClick(event)">
+    <div class="modal-box" id="modalBox">
+
+      <button class="modal-close" onclick="closeModal()" title="Close">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+
+      <!-- Logo -->
+      <div class="modal-logo">
+        <div class="logo-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+          </svg>
+        </div>
+        <span class="logo-name">Assembly PC</span>
+      </div>
+
+      <!-- ── STEP 1: Role Selection ── -->
+      <div id="step-role">
+        <div class="modal-title-block" style="text-align:center; margin-bottom: 28px;">
+          <h2>Who are you?</h2>
+          <p>Choose your role to get started</p>
+        </div>
+        <div class="role-cards">
+          <button class="role-card" onclick="selectRole('student')">
+            <div class="role-icon role-icon-student">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+              </svg>
+            </div>
+            <div class="role-label">Student</div>
+            <div class="role-desc">Learn to build PCs through guided lessons and simulations</div>
+            <div class="role-arrow">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+          </button>
+          <button class="role-card" onclick="selectRole('instructor')">
+            <div class="role-icon role-icon-instructor">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                <rect x="2" y="3" width="20" height="14" rx="2"/>
+                <path d="M8 21h8M12 17v4"/>
+                <path d="M7 8h10M7 11h6"/>
+              </svg>
+            </div>
+            <div class="role-label">Instructor</div>
+            <div class="role-desc">Manage classes, track student progress and create assignments</div>
+            <div class="role-arrow">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── STEP 2: Login / Sign Up Forms ── -->
+      <div id="step-forms" class="hidden">
+
+        <!-- Back button + role badge -->
+        <div class="form-topbar">
+          <button class="back-btn" onclick="goBack()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Back
+          </button>
+          <span class="role-badge" id="roleBadge"></span>
+        </div>
+
+        <!-- Tab Switcher -->
+        <div class="modal-tabs">
+          <button class="modal-tab active" id="tab-login" onclick="switchTab('login')">Login</button>
+          <button class="modal-tab" id="tab-signup" onclick="switchTab('signup')">Sign Up</button>
+        </div>
+
+        <!-- ── LOGIN FORM ── -->
+        <div class="modal-form" id="form-login">
+          <div class="modal-title-block">
+            <h2 id="login-title">Welcome back</h2>
+            <p id="login-sub">Sign in to continue building</p>
+          </div>
+          <div class="form-group" id="login-studentid" style="display:none;">
+            <label>Student ID</label>
+            <div class="input-wrap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/></svg>
+              <input id="login-studentid-input" type="text" placeholder="e.g. STU-2024-0012" />
+            </div>
+          </div>
+
+          <div class="form-group" id="login-email-group" style="display:none;">
+            <label>Institutional Email</label>
+            <div class="input-wrap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+              <input id="login-email" type="email" placeholder="you@lnu.edu.ph" />
+            </div>
+          </div>
+          <!-- Instructor employee ID removed per requirements -->
+          <div class="form-group">
+            <label>Password</label>
+            <div class="input-wrap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <input type="password" placeholder="••••••••" id="login-pass" />
+              <button class="toggle-pass" onclick="togglePass('login-pass',this)" tabindex="-1" type="button">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-row">
+            <label class="checkbox-label"><input type="checkbox" /> Remember me</label>
+            <a href="#" class="forgot-link">Forgot password?</a>
+          </div>
+          <button class="btn-modal-submit" id="login-submit-btn" style="display:none;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+            Sign In
+          </button>
+          <p class="modal-switch">Don't have an account? <a href="#" onclick="switchTab('signup'); return false;">Sign up free</a></p>
+        </div>
+
+        <!-- ── SIGN UP FORM ── -->
+        <div class="modal-form hidden" id="form-signup">
+          <div class="modal-title-block">
+            <h2 id="signup-title">Create your account</h2>
+            <p id="signup-sub">Start building your PC knowledge today</p>
+          </div>
+          <div class="form-row-half">
+            <div class="form-group">
+              <label>First name</label>
+              <div class="input-wrap">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <input type="text" placeholder="Juan" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Last name</label>
+              <div class="input-wrap">
+                <input type="text" placeholder="Dela Cruz" style="padding-left:14px;" />
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Email address</label>
+            <div class="input-wrap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+              <input id="signup-email" type="email" placeholder="you@example.com" disabled />
+            </div>
+          </div>
+          <!-- Student-only: Student ID -->
+          <div class="form-group" id="signup-studentid" style="display:none;">
+            <label>Student ID</label>
+            <div class="input-wrap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-4 0v2M12 12v4M10 14h4"/></svg>
+              <input id="signup-studentid-input" type="text" placeholder="e.g. STU-2024-0012" disabled />
+            </div>
+          </div>
+          <!-- Instructor employee ID removed per requirements -->
+          <div class="form-group instructor-only hidden" id="signup-dept">
+            <label>Department</label>
+            <div class="input-wrap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              <input type="text" placeholder="e.g. Computer Science" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <div class="input-wrap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <input type="password" placeholder="Min. 8 characters" id="signup-pass" />
+              <button class="toggle-pass" onclick="togglePass('signup-pass',this)" tabindex="-1" type="button">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label" style="align-items:flex-start; gap:10px;">
+              <input type="checkbox" style="margin-top:2px; flex-shrink:0;" />
+              <span style="font-size:13px; color:#718096; line-height:1.5;">I agree to the <a href="#" style="color:var(--green-dark);">Terms of Service</a> and <a href="#" style="color:var(--green-dark);">Privacy Policy</a></span>
+            </label>
+          </div>
+          <button class="btn-modal-submit" id="signup-submit-btn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+            Create Account
+          </button>
+          <p class="modal-switch">Already have an account? <a href="#" onclick="switchTab('login'); return false;">Sign in</a></p>
+        </div>
+
+      </div><!-- /step-forms -->
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-badge">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
+        Interactive 2D Drag &amp; Drop PC Building
+      </div>
+
+      <div class="hero-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#3ecf5e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+        </svg>
+      </div>
+
+      <h1>Learn to Build Your<br /><span>Own PC</span></h1>
+
+      <p>An interactive, educational simulator that teaches you PC hardware fundamentals and assembly through a hands-on 2D drag &amp; drop experience.</p>
+
+      <div class="hero-btns">
+        <a href="/simulator" class="btn-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+          Start Building
+        </a>
+        <a href="/simulator" class="btn-secondary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+          Explore Gallery
+        </a>
+      </div>
+
+
+    </div>
+  </section>
+
+  <!-- FEATURES / WHY CHOOSE -->
+  <section class="features" id="features">
+    <div class="section-header">
+      <span class="section-label">Features</span>
+      <h2>Why Choose Assembly PC?</h2>
+      <p>Everything you need to master PC building from scratch</p>
+    </div>
+
+    <div class="cards-grid">
+      <div class="feature-card">
+        <div class="card-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#3ecf5e" stroke-width="2" stroke-linecap="round">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+          </svg>
+        </div>
+        <h3>Hands-on Simulator</h3>
+        <p>Build a full PC step-by-step in an interactive 2D drag &amp; drop environment with real-time component validation and feedback.</p>
+      </div>
+      <div class="feature-card">
+        <div class="card-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#3ecf5e" stroke-width="2" stroke-linecap="round">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+          </svg>
+        </div>
+        <h3>Guided Learning</h3>
+        <p>Structured lessons designed to take you from zero knowledge to understanding every component inside a PC.</p>
+      </div>
+      <div class="feature-card">
+        <div class="card-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#3ecf5e" stroke-width="2" stroke-linecap="round">
+            <circle cx="12" cy="8" r="4"/>
+            <path d="M20 21a8 8 0 1 0-16 0"/>
+            <path d="M12 12v4m0 0l-2-2m2 2 2-2"/>
+          </svg>
+        </div>
+        <h3>Progress Tracking</h3>
+        <p>Earn badges and track milestones as you complete modules, quizzes, and build challenges.</p>
+      </div>
+      <div class="feature-card">
+        <div class="card-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#3ecf5e" stroke-width="2" stroke-linecap="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <h3>Community Builds</h3>
+        <p>Share your PC configurations and explore top-rated builds submitted by the global Assembly PC community.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="how-it-works" id="how">
+    <div class="section-header">
+      <span class="section-label" style="color: var(--green);">Process</span>
+      <h2>How It Works</h2>
+      <p style="color: var(--text-muted);">Three simple steps to start building your dream PC</p>
+    </div>
+
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-number">01</div>
+        <h3>Choose Your Parts</h3>
+        <p>Browse our extensive catalog of CPUs, GPUs, motherboards, RAM, storage, and more. Filter by budget and use case.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">02</div>
+        <h3>Drag &amp; Drop Assembly</h3>
+        <p>Follow guided steps to drag and place each component onto the virtual motherboard. Get instant feedback on compatibility and fit.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">03</div>
+        <h3>Test &amp; Learn</h3>
+        <p>Run simulated benchmarks, take knowledge quizzes, and share your finished build with the community.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="cta-inner">
+      <h2>Ready to <span>Start Building?</span></h2>
+      <p>Join thousands of learners who have already mastered PC assembly. No prior knowledge required — just curiosity and a love for hardware.</p>
+      <div class="cta-btns">
+        <a href="/simulator" class="btn-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+          Start Building — It's Free
+        </a>
+        <a href="/simulator" class="btn-dark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+          Explore Gallery
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <a href="#" class="footer-logo">
+      <div class="logo-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+        </svg>
+      </div>
+      <span class="footer-logo-name">Assembly PC</span>
+    </a>
+
+    <div class="footer-links">
+      <a href="#">About</a>
+      <a href="#">Gallery</a>
+      <a href="#">Simulator</a>
+      <a href="#">Quiz</a>
+      <a href="#">Contact</a>
+    </div>
+
+    <span class="footer-copy">© 2026 Assembly PC. All rights reserved.</span>
+  </footer>
+
+  <!-- FLOATING HELP -->
+  <button class="help-btn" title="Help">
+    <span>?</span>
+  </button>
+
+  <script>
+    let currentRole = null;
+    // saved node for student-id group so we can remove/restore for instructor flows
+    let savedSignupStudentGroup = null;
+
+    const ALLOWED_INSTITUTION_DOMAINS = ['lnu.edu.ph', 'lnu.edu']; // adjust if needed
+
+    function openModal(tab) {
+      currentRole = null;
+      lockFormInputs(true);
+      showStep('role');
+      document.getElementById('authModal').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      document.getElementById('authModal').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    function handleOverlayClick(e) {
+      if (e.target === document.getElementById('authModal')) closeModal();
+    }
+
+    function showStep(step) {
+      document.getElementById('step-role').classList.toggle('hidden', step !== 'role');
+      document.getElementById('step-forms').classList.toggle('hidden', step !== 'forms');
+    }
+
+    function lockFormInputs(locked) {
+      // Hide/show form input bars and submit buttons until a role is chosen
+      document.querySelectorAll('#form-login .form-group, #form-signup .form-group').forEach(el => {
+        el.style.display = locked ? 'none' : '';
+      });
+      const loginBtn = document.getElementById('login-submit-btn');
+      const signupBtn = document.getElementById('signup-submit-btn');
+      if (loginBtn) loginBtn.style.display = locked ? 'none' : '';
+      if (signupBtn) signupBtn.style.display = locked ? 'none' : '';
+      // Also toggle disabled state for form controls so users cannot tab into them when locked
+      document.querySelectorAll('#form-login input, #form-login button, #form-signup input, #form-signup button').forEach(el => {
+        if (el.classList && el.classList.contains('modal-tab')) return;
+        el.disabled = locked;
+      });
+    }
+
+    function selectRole(role) {
+      currentRole = role;
+      const badge = document.getElementById('roleBadge');
+      badge.textContent = role === 'student' ? '🎓 Student' : '🖥️ Instructor';
+      badge.className = 'role-badge ' + role;
+
+      if (role === 'student') {
+        document.getElementById('login-title').textContent = 'Welcome back, Student';
+        document.getElementById('login-sub').textContent = 'Sign in to continue your PC learning journey';
+        document.getElementById('signup-title').textContent = 'Join as a Student';
+        document.getElementById('signup-sub').textContent = 'Start building your PC knowledge today';
+        const signupStudentGroup = document.getElementById('signup-studentid');
+        if (signupStudentGroup) {
+          signupStudentGroup.style.display = 'block';
+          signupStudentGroup.setAttribute('aria-hidden', 'false');
+          const sidInput = document.getElementById('signup-studentid-input');
+          if (sidInput) { sidInput.disabled = false; sidInput.tabIndex = 0; }
+        }
+        document.getElementById('signup-dept').style.display = 'none';
+
+        // enable and require student fields; show student login field
+        lockFormInputs(false);
+        // restore student-id group if it was previously removed for instructor flows
+        if (!document.getElementById('signup-studentid') && savedSignupStudentGroup) {
+          const parent = document.getElementById('form-signup');
+          const before = document.getElementById('signup-dept') || document.getElementById('signup-submit-btn');
+          try { parent.insertBefore(savedSignupStudentGroup.cloneNode(true), before); } catch (err) { parent.appendChild(savedSignupStudentGroup.cloneNode(true)); }
+          savedSignupStudentGroup = null;
+        }
+        const sidInput = document.getElementById('signup-studentid-input');
+        if (sidInput) sidInput.required = true;
+        document.getElementById('signup-email').required = true;
+        // login: show student id input only
+        const loginSidGroup = document.getElementById('login-studentid');
+        if (loginSidGroup) { loginSidGroup.style.display = ''; loginSidGroup.setAttribute('aria-hidden', 'false'); }
+        document.getElementById('login-email-group').style.display = 'none';
+        document.getElementById('login-studentid-input').required = true;
+        document.getElementById('login-email').required = false;
+        document.getElementById('login-submit-btn').style.display = '';
+
+        // hide the role selection to free up space
+        const roleStep = document.getElementById('step-role');
+        if (roleStep) roleStep.style.display = 'none';
+
+        // explicitly disable instructor-only controls so they cannot be focused or edited
+        ['login-email', 'signup-dept'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.disabled = true;
+        });
+
+      } else {
+        document.getElementById('login-title').textContent = 'Instructor Login';
+        document.getElementById('login-sub').textContent = 'Sign in to manage your classes';
+        document.getElementById('signup-title').textContent = 'Register as Instructor';
+        document.getElementById('signup-sub').textContent = 'Set up your instructor account';
+        const signupStudentGroup2 = document.getElementById('signup-studentid');
+        if (signupStudentGroup2) {
+          signupStudentGroup2.style.display = 'none';
+          signupStudentGroup2.setAttribute('aria-hidden', 'true');
+          const sidInput2 = document.getElementById('signup-studentid-input');
+          if (sidInput2) { sidInput2.disabled = true; sidInput2.tabIndex = -1; }
+        }
+        document.getElementById('signup-dept').style.display = 'block';
+
+        // enable and require institutional email for instructors; show instructor login email
+        lockFormInputs(false);
+        const sidInput2 = document.getElementById('signup-studentid-input');
+        if (sidInput2) sidInput2.required = false;
+        document.getElementById('signup-email').required = true;
+        const loginSidGroup2 = document.getElementById('login-studentid');
+        if (loginSidGroup2) { loginSidGroup2.style.display = 'none'; loginSidGroup2.setAttribute('aria-hidden', 'true'); const sidInp = document.getElementById('login-studentid-input'); if (sidInp) { sidInp.disabled = true; sidInp.tabIndex = -1; } }
+        document.getElementById('login-email-group').style.display = '';
+        document.getElementById('login-studentid-input').required = false;
+        document.getElementById('login-email').required = true;
+        document.getElementById('login-submit-btn').style.display = '';
+
+        // hide the role selection to free up space
+        const roleStep2 = document.getElementById('step-role');
+        if (roleStep2) roleStep2.style.display = 'none';
+
+        // remove the student-id input group from signup for instructors
+        const signupStudentGroupRef = document.getElementById('signup-studentid');
+        if (signupStudentGroupRef) {
+          savedSignupStudentGroup = signupStudentGroupRef.cloneNode(true);
+          signupStudentGroupRef.remove();
+        }
+
+        // explicitly disable student-only controls so they cannot be focused or edited
+        ['signup-studentid-input', 'login-studentid-input'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.disabled = true;
+        });
+      }
+
+      switchTab('login');
+      showStep('forms');
+      // focus first enabled input in forms
+      const firstInput = document.querySelector('#form-signup input:not([disabled]), #form-login input:not([disabled])');
+      if (firstInput) firstInput.focus();
+    }
+
+    function goBack() {
+      // returning to role selection should lock form inputs again and show the role chooser
+      const roleStep = document.getElementById('step-role');
+      if (roleStep) roleStep.style.display = '';
+      showStep('role');
+      lockFormInputs(true);
+      currentRole = null;
+      clearSignupError();
+    }
+
+    function switchTab(tab) {
+      document.getElementById('form-login').classList.toggle('hidden', tab !== 'login');
+      document.getElementById('form-signup').classList.toggle('hidden', tab !== 'signup');
+      document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+      document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
+    }
+
+    function togglePass(id, btn) {
+      const inp = document.getElementById(id);
+      const showing = inp.type === 'text';
+      inp.type = showing ? 'password' : 'text';
+      btn.querySelector('svg').style.opacity = showing ? '1' : '0.4';
+    }
+
+    function showSignupError(msg) {
+      let el = document.getElementById('signup-error');
+      if (!el) {
+        el = document.createElement('div');
+        el.id = 'signup-error';
+        el.style.color = '#d9534f';
+        el.style.fontSize = '13px';
+        el.style.marginTop = '8px';
+        document.getElementById('signup-submit-btn').insertAdjacentElement('beforebegin', el);
+      }
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+
+    function clearSignupError() {
+      const el = document.getElementById('signup-error');
+      if (el) el.style.display = 'none';
+    }
+
+    function isInstitutionalEmail(email) {
+      if (!email) return false;
+      const lower = email.toLowerCase();
+      return ALLOWED_INSTITUTION_DOMAINS.some(d => lower.endsWith('@' + d) || lower.endsWith(d));
+    }
+
+    // Signup validation
+    const signupBtn = document.getElementById('signup-submit-btn');
+    if (signupBtn) {
+      signupBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        clearSignupError();
+        if (!currentRole) { showSignupError('Please choose Student or Instructor first.'); return; }
+        const email = document.getElementById('signup-email').value.trim();
+        if (!email) { showSignupError('Please enter an email address.'); return; }
+        if (currentRole === 'student') {
+          const sidEl = document.getElementById('signup-studentid-input');
+          const sid = sidEl ? sidEl.value.trim() : '';
+          if (!sid) { showSignupError('Student registration requires a Student ID.'); return; }
+          // proceed with student signup (replace with real submit)
+          console.log('Student signup OK', { email, studentId: sid });
+          showSignupError('Student signup validated (demo).');
+        } else {
+          // instructor must use institutional email
+          if (!isInstitutionalEmail(email)) { showSignupError('Please use your institutional LNU email address.'); return; }
+          console.log('Instructor signup OK', { email });
+          showSignupError('Instructor signup validated (demo).');
+        }
+      });
+    }
+
+    // Login validation
+    function showLoginError(msg) {
+      let el = document.getElementById('login-error');
+      if (!el) {
+        el = document.createElement('div');
+        el.id = 'login-error';
+        el.style.color = '#d9534f';
+        el.style.fontSize = '13px';
+        el.style.marginTop = '8px';
+        document.getElementById('login-submit-btn').insertAdjacentElement('beforebegin', el);
+      }
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+
+    function clearLoginError() {
+      const el = document.getElementById('login-error');
+      if (el) el.style.display = 'none';
+    }
+
+    const loginBtn = document.getElementById('login-submit-btn');
+    if (loginBtn) {
+      loginBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        clearLoginError();
+        if (!currentRole) { showLoginError('Please choose Student or Instructor first.'); return; }
+        if (currentRole === 'student') {
+          const sid = document.getElementById('login-studentid-input').value.trim();
+          if (!sid) { showLoginError('Student login requires Student ID.'); return; }
+          console.log('Student login OK', { studentId: sid });
+          showLoginError('Student login validated (demo).');
+        } else {
+          const email = document.getElementById('login-email').value.trim();
+          if (!email) { showLoginError('Please enter your institutional email.'); return; }
+          if (!isInstitutionalEmail(email)) { showLoginError('Please use your institutional LNU email address.'); return; }
+          console.log('Instructor login OK', { email });
+          showLoginError('Instructor login validated (demo).');
+        }
+      });
+    }
+
+    // Ensure pressing Escape closes modal
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+    // Initially lock form inputs until a role is selected
+    lockFormInputs(true);
+  </script>
+
+</body>
+</html>

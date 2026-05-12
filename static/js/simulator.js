@@ -1,10 +1,10 @@
 /**
- * PC Building Simulator - Comprehensive Interactive UI
- * Handles drag-drop, canvas visualization, specs display, and build management
+ * PC Building Simulator - Comprehensive Interactive 2D UI
+ * Complete with drag-drop, canvas visualization, detailed specs, build management
+ * Fully editable and maintainable code structure
  */
 
 // ==================== GLOBAL STATE ====================
-
 const state = {
     components: {},
     build: {
@@ -25,10 +25,31 @@ const state = {
     mouseX: 0,
     mouseY: 0,
     hoveredSlot: null,
-    particles: []
+    particles: [],
+    compatibility: {
+        compatible: false,
+        issues: []
+    },
+    stats: {
+        totalPower: 0,
+        totalCost: 0,
+        totalMemory: 0,
+        gpuMemory: 0
+    },
+    // ==================== COMPONENT POSITIONING (FOR IMPORT-READY DESIGNS) ====================
+    componentPositions: {}, // Dynamic positions for placed components
+    canvasDragging: {
+        active: false,
+        category: null,
+        offsetX: 0,
+        offsetY: 0,
+        startX: 0,
+        startY: 0
+    },
+    selectedOnCanvas: null // Currently selected component on canvas for dragging
 };
 
-// Particle effect for assembly feedback
+// ==================== PARTICLE EFFECT CLASS ====================
 class Particle {
     constructor(x, y, color) {
         this.x = x;
@@ -44,7 +65,7 @@ class Particle {
     update() {
         this.x += this.vx;
         this.y += this.vy;
-        this.vy += 0.1; // gravity
+        this.vy += 0.1;
         this.life -= this.decay;
         this.size *= 0.95;
     }
@@ -59,12 +80,31 @@ class Particle {
     }
 }
 
-// Canvas and 2D drawing
+// ==================== CANVAS SETUP ====================
 const canvas = document.getElementById('pcCanvas');
 const ctx = canvas.getContext('2d');
-const canvasRect = canvas.getBoundingClientRect();
 
-// PC Component positions on canvas (for 2D visualization)
+// ==================== COMPONENT DESIGN IMPORTS (PLACEHOLDER) ====================
+// This structure is ready to load component images/designs from external files
+// Example usage after adding images:
+// const componentImages = {
+//     cpu: new Image(),
+//     motherboard: new Image(),
+//     ram: new Image(),
+//     gpu: new Image(),
+//     storage: new Image(),
+//     psu: new Image(),
+//     case: new Image(),
+//     cooler: new Image()
+// };
+//
+// componentImages.cpu.src = '/static/img/components/cpu.png';
+// componentImages.motherboard.src = '/static/img/components/motherboard.png';
+// etc...
+
+const componentImages = {}; // Ready for importing component designs
+
+// Component positions on the 2D canvas visualization
 const componentPositions = {
     case: { x: 20, y: 20, width: 200, height: 380, label: 'CASE', order: 1 },
     psu: { x: 230, y: 320, width: 80, height: 80, label: 'PSU', order: 2 },
@@ -76,7 +116,7 @@ const componentPositions = {
     storage: { x: 230, y: 150, width: 80, height: 40, label: 'STORAGE', order: 8 }
 };
 
-// Colors for components
+// Component colors for canvas visualization
 const componentColors = {
     case: '#8B4513',
     motherboard: '#2E7D32',
@@ -88,65 +128,141 @@ const componentColors = {
     storage: '#607D8B'
 };
 
-// Initialize app
+// ==================== INITIALIZATION ====================
 document.addEventListener('DOMContentLoaded', () => {
-    loadComponents();
-    setupEventListeners();
-    setupCanvasEvents();
-    drawPC();
-    animationLoop();
+    initializeApp();
 });
 
-// Load components from API
+async function initializeApp() {
+    await loadComponents();
+    setupCategoryButtons();
+    setupEventListeners();
+    setupCanvasEvents();
+    updateBuildDisplay(); // Initialize empty slots
+    displayComponents('cpu');
+    drawPC();
+    startAnimationLoop();
+}
+
+// ==================== LOAD COMPONENTS FROM API ====================
 async function loadComponents() {
     try {
         const response = await fetch('/api/components');
-        state.components = await response.json();
-        displayComponents('cpu');
+        const data = await response.json();
+        state.components = data;
+        console.log('Components loaded:', state.components);
     } catch (error) {
         console.error('Error loading components:', error);
+        showNotification('Error: Could not load components', 'error');
     }
 }
 
-// Display components by category
-function displayComponents(category) {
-    state.selectedCategory = category;
-    const componentsList = document.getElementById('componentsList');
-    componentsList.innerHTML = '';
-
-    const components = state.components[category] || [];
+// ==================== CATEGORY MANAGEMENT ====================
+function setupCategoryButtons() {
+    const categories = ['cpu', 'motherboard', 'ram', 'gpu', 'storage', 'psu', 'case', 'cooler'];
+    const categoryTabsContainer = document.querySelector('.category-tabs');
     
-    components.forEach(component => {
-        const div = document.createElement('div');
-        div.className = 'component-item';
-        div.draggable = true;
-        div.dataset.componentId = component.id;
-        div.dataset.category = category;
-        
-        div.innerHTML = `
-            <h4>${component.name}</h4>
-            <p><strong>${component.brand}</strong></p>
-            <p>Power: ${component.power}W</p>
-            <p class="component-price">$${component.price}</p>
-            <p class="drag-indicator">🖱️ Drag to add</p>
-        `;
-        
-        // Setup drag event
-        div.addEventListener('dragstart', handleDragStart);
-        div.addEventListener('dragend', handleDragEnd);
-        
-        // Also allow click to add via modal
-        div.addEventListener('click', () => {
-            if (event.target.closest('.drag-indicator') === null) {
-                openComponentModal(component, category);
-            }
-        });
-        
-        componentsList.appendChild(div);
+    if (!categoryTabsContainer) return;
+    
+    categoryTabsContainer.innerHTML = '';
+    categories.forEach(category => {
+        const btn = document.createElement('button');
+        btn.className = `category-btn ${category === 'cpu' ? 'active' : ''}`;
+        btn.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+        btn.onclick = () => selectCategory(category);
+        categoryTabsContainer.appendChild(btn);
     });
 }
 
-// Drag start handler
+function selectCategory(category) {
+    state.selectedCategory = category;
+    
+    // Update active button
+    document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    displayComponents(category);
+}
+
+// ==================== DISPLAY COMPONENTS ====================
+function displayComponents(category) {
+    const componentsList = document.getElementById('componentsList');
+    if (!componentsList) return;
+    
+    componentsList.innerHTML = '';
+    const components = state.components[category] || [];
+    
+    if (components.length === 0) {
+        componentsList.innerHTML = '<p style="padding: 20px; text-align: center; color: #999;">No components available</p>';
+        return;
+    }
+    
+    components.forEach(component => {
+        const componentElement = document.createElement('div');
+        componentElement.className = 'component-item';
+        componentElement.draggable = true;
+        componentElement.dataset.componentId = component.id;
+        componentElement.dataset.category = category;
+        
+        const priceText = component.price ? `$${component.price}` : 'N/A';
+        
+        componentElement.innerHTML = `
+            <h4>${component.name}</h4>
+            <p class="brand-name">${component.brand || 'Generic'}</p>
+            <p style="font-size: 0.8em; color: #999;">${component.model || ''}</p>
+            <div class="component-price">${priceText}</div>
+            <div style="font-size: 0.8em; color: #666; margin-top: 5px;">
+                ${getComponentShortSpec(component, category)}
+            </div>
+        `;
+        
+        componentElement.addEventListener('dragstart', handleDragStart);
+        componentElement.addEventListener('dragend', handleDragEnd);
+        componentElement.addEventListener('click', (e) => {
+            if (e.target.closest('.remove-btn')) return;
+            openComponentModal(component, category);
+        });
+        
+        componentsList.appendChild(componentElement);
+    });
+}
+
+function getComponentShortSpec(component, category) {
+    let spec = '';
+    switch(category) {
+        case 'cpu':
+            spec = `${component.cores || 'N/A'} cores • ${component.clockSpeed || 'N/A'} GHz`;
+            break;
+        case 'motherboard':
+            spec = `${component.chipset || 'N/A'} • ${component.socket || 'N/A'}`;
+            break;
+        case 'ram':
+            spec = `${component.capacity || 'N/A'} GB • ${component.speed || 'N/A'} MHz`;
+            break;
+        case 'gpu':
+            spec = `${component.gMemory || 'N/A'} GB • ${component.architecture || 'N/A'}`;
+            break;
+        case 'storage':
+            spec = `${component.capacity || 'N/A'} • ${component.type || 'N/A'}`;
+            break;
+        case 'psu':
+            spec = `${component.wattage || 'N/A'}W • ${component.efficiency || 'N/A'}`;
+            break;
+        case 'case':
+            spec = `${component.formFactor || 'N/A'} • ${component.material || 'N/A'}`;
+            break;
+        case 'cooler':
+            spec = `${component.type || 'N/A'} • ${component.maxTDP || 'N/A'}W TDP`;
+            break;
+        default:
+            spec = 'Details available';
+    }
+    return spec;
+}
+
+// ==================== DRAG AND DROP HANDLERS ====================
 function handleDragStart(e) {
     const componentId = this.dataset.componentId;
     const category = this.dataset.category;
@@ -164,47 +280,50 @@ function handleDragStart(e) {
     dragImage.style.position = 'absolute';
     dragImage.style.background = componentColors[category];
     dragImage.style.color = 'white';
-    dragImage.style.padding = '10px';
+    dragImage.style.padding = '10px 15px';
     dragImage.style.borderRadius = '4px';
     dragImage.style.fontWeight = 'bold';
     dragImage.style.zIndex = '-1000';
+    dragImage.style.fontSize = '12px';
     dragImage.textContent = component.name;
     document.body.appendChild(dragImage);
     e.dataTransfer.setDragImage(dragImage, 10, 10);
     setTimeout(() => dragImage.remove(), 0);
     
-    // Add visual feedback
     this.style.opacity = '0.5';
     this.style.borderColor = componentColors[category];
 }
 
-// Drag end handler
 function handleDragEnd(e) {
     this.style.opacity = '1';
     this.style.borderColor = '#e0e0e0';
 }
 
-// Canvas drag events
+// ==================== CANVAS DRAG AND DROP ====================
 function setupCanvasEvents() {
     canvas.addEventListener('dragover', handleCanvasDragOver);
     canvas.addEventListener('drop', handleCanvasDrop);
     canvas.addEventListener('dragleave', handleCanvasDragLeave);
     canvas.addEventListener('mousemove', handleCanvasMouseMove);
+    canvas.addEventListener('mousedown', handleCanvasMouseDown);
+    canvas.addEventListener('mousemove', handleCanvasComponentDrag);
+    canvas.addEventListener('mouseup', handleCanvasMouseUp);
     canvas.addEventListener('click', handleCanvasClick);
 }
 
+// ==================== CANVAS DRAG FROM LIST ====================
 function handleCanvasDragOver(e) {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'copy';
     
-    // Find which slot is being hovered
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     
     state.hoveredSlot = null;
     for (const [slotName, pos] of Object.entries(componentPositions)) {
-        if (x >= pos.x && x <= pos.x + pos.width && y >= pos.y && y <= pos.y + pos.height) {
+        if (x >= pos.x && x <= pos.x + pos.width && 
+            y >= pos.y && y <= pos.y + pos.height) {
             state.hoveredSlot = slotName;
             break;
         }
@@ -218,7 +337,9 @@ function handleCanvasDragLeave(e) {
 function handleCanvasDrop(e) {
     e.preventDefault();
     
-    if (!state.draggingComponent || !state.draggedComponentCategory) return;
+    if (!state.draggingComponent || !state.draggedComponentCategory) {
+        return;
+    }
     
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -227,39 +348,19 @@ function handleCanvasDrop(e) {
     // Find which slot the drop happened on
     let targetSlot = null;
     for (const [slotName, pos] of Object.entries(componentPositions)) {
-        // Map canvas slots to build categories
-        const categoryMap = {
-            case: 'case',
-            motherboard: 'motherboard',
-            cpu: 'cpu',
-            cooler: 'cooler',
-            ram: 'ram',
-            gpu: 'gpu',
-            psu: 'psu',
-            storage: 'storage'
-        };
-        
-        if (x >= pos.x && x <= pos.x + pos.width && y >= pos.y && y <= pos.y + pos.height) {
-            targetSlot = categoryMap[slotName];
+        if (x >= pos.x && x <= pos.x + pos.width && 
+            y >= pos.y && y <= pos.y + pos.height) {
+            targetSlot = slotName;
             break;
         }
     }
     
     if (targetSlot && state.draggedComponentCategory === targetSlot) {
-        // Valid drop
         addComponentToBuild(state.draggingComponent, state.draggedComponentCategory);
-        
-        // Create particles at drop location
-        for (let i = 0; i < 8; i++) {
-            state.particles.push(new Particle(x, y, componentColors[state.draggedComponentCategory]));
-        }
-        
-        // Show success feedback
-        showNotification(`✓ ${state.draggingComponent.name} installed!`);
-    } else if (!targetSlot) {
-        showNotification('❌ Drop outside valid slot area');
-    } else {
-        showNotification('❌ Wrong component type for this slot');
+        showNotification(`${state.draggingComponent.name} added to build!`, 'success');
+        showAddAnimation(targetSlot);
+    } else if (targetSlot) {
+        showNotification('Component type does not match this slot!', 'error');
     }
     
     state.hoveredSlot = null;
@@ -267,20 +368,153 @@ function handleCanvasDrop(e) {
     state.draggedComponentCategory = null;
 }
 
+// ==================== CANVAS COMPONENT DRAGGING (ON CANVAS) ====================
+function handleCanvasMouseDown(e) {
+    if (e.button !== 0) return; // Left click only
+    
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    // Check if clicking on a placed component
+    for (const [category, component] of Object.entries(state.build)) {
+        if (component && state.componentPositions[category]) {
+            const pos = state.componentPositions[category];
+            if (x >= pos.x && x <= pos.x + pos.width && 
+                y >= pos.y && y <= pos.y + pos.height) {
+                
+                state.canvasDragging.active = true;
+                state.canvasDragging.category = category;
+                state.canvasDragging.startX = x;
+                state.canvasDragging.startY = y;
+                state.canvasDragging.offsetX = x - pos.x;
+                state.canvasDragging.offsetY = y - pos.y;
+                state.selectedOnCanvas = category;
+                
+                canvas.style.cursor = 'grabbing';
+                e.preventDefault();
+                return;
+            }
+        }
+    }
+}
+
+function handleCanvasComponentDrag(e) {
+    if (!state.canvasDragging.active) {
+        // Hover effect for components
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        let hoveringComponent = null;
+        for (const [category, component] of Object.entries(state.build)) {
+            if (component && state.componentPositions[category]) {
+                const pos = state.componentPositions[category];
+                if (x >= pos.x && x <= pos.x + pos.width && 
+                    y >= pos.y && y <= pos.y + pos.height) {
+                    hoveringComponent = category;
+                    break;
+                }
+            }
+        }
+        
+        canvas.style.cursor = hoveringComponent ? 'grab' : 'default';
+        return;
+    }
+    
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    // Calculate new position
+    let newX = x - state.canvasDragging.offsetX;
+    let newY = y - state.canvasDragging.offsetY;
+    
+    // Clamp to canvas boundaries
+    const category = state.canvasDragging.category;
+    const width = 80;
+    const height = 60;
+    
+    newX = Math.max(0, Math.min(newX, canvas.width - width));
+    newY = Math.max(0, Math.min(newY, canvas.height - height));
+    
+    // Update component position
+    if (!state.componentPositions[category]) {
+        state.componentPositions[category] = {};
+    }
+    state.componentPositions[category].x = newX;
+    state.componentPositions[category].y = newY;
+    
+    // Check for collisions and adjust if needed
+    checkComponentCollisions(category);
+    
+    drawPC();
+}
+
+function handleCanvasMouseUp(e) {
+    if (state.canvasDragging.active) {
+        canvas.style.cursor = 'default';
+        state.canvasDragging.active = false;
+        state.canvasDragging.category = null;
+        drawPC();
+    }
+}
+
+// ==================== COLLISION DETECTION ====================
+function checkComponentCollisions(movingCategory) {
+    const movingPos = state.componentPositions[movingCategory];
+    const movingWidth = 80;
+    const movingHeight = 60;
+    const padding = 10; // Minimum space between components
+    
+    for (const [category, component] of Object.entries(state.build)) {
+        if (category === movingCategory || !component || !state.componentPositions[category]) {
+            continue;
+        }
+        
+        const otherPos = state.componentPositions[category];
+        const otherWidth = 80;
+        const otherHeight = 60;
+        
+        // Simple AABB collision check
+        if (checkAABBCollision(
+            movingPos.x, movingPos.y, movingWidth, movingHeight,
+            otherPos.x, otherPos.y, otherWidth, otherHeight,
+            padding
+        )) {
+            // Collision detected - resolve by moving the placed component
+            resolveCollision(movingCategory, category, movingPos, otherPos);
+        }
+    }
+}
+
+function checkAABBCollision(x1, y1, w1, h1, x2, y2, w2, h2, padding = 0) {
+    return !(x1 + w1 + padding < x2 || 
+             x2 + w2 + padding < x1 || 
+             y1 + h1 + padding < y2 || 
+             y2 + h2 + padding < y1);
+}
+
+function resolveCollision(movingCategory, staticCategory, movingPos, staticPos) {
+    // Push the static component away
+    const dx = staticPos.x - movingPos.x;
+    const dy = staticPos.y - movingPos.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    
+    if (distance > 0) {
+        const pushDistance = 100;
+        const pushX = (dx / distance) * pushDistance;
+        const pushY = (dy / distance) * pushDistance;
+        
+        staticPos.x = Math.max(0, Math.min(staticPos.x + pushX, canvas.width - 80));
+        staticPos.y = Math.max(0, Math.min(staticPos.y + pushY, canvas.height - 60));
+    }
+}
+
 function handleCanvasMouseMove(e) {
     const rect = canvas.getBoundingClientRect();
     state.mouseX = e.clientX - rect.left;
     state.mouseY = e.clientY - rect.top;
-    
-    // Check which slot is being hovered
-    state.hoveredSlot = null;
-    for (const [slotName, pos] of Object.entries(componentPositions)) {
-        if (state.mouseX >= pos.x && state.mouseX <= pos.x + pos.width && 
-            state.mouseY >= pos.y && state.mouseY <= pos.y + pos.height) {
-            state.hoveredSlot = slotName;
-            break;
-        }
-    }
 }
 
 function handleCanvasClick(e) {
@@ -288,279 +522,199 @@ function handleCanvasClick(e) {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     
-    // Check which slot was clicked
-    for (const [slotName, pos] of Object.entries(componentPositions)) {
-        if (x >= pos.x && x <= pos.x + pos.width && y >= pos.y && y <= pos.y + pos.height) {
-            const categoryMap = {
-                case: 'case',
-                motherboard: 'motherboard',
-                cpu: 'cpu',
-                cooler: 'cooler',
-                ram: 'ram',
-                gpu: 'gpu',
-                psu: 'psu',
-                storage: 'storage'
-            };
-            
-            const category = categoryMap[slotName];
-            if (state.build[category]) {
-                // Show component details
-                const component = state.components[category]?.find(c => c.id === state.build[category]);
-                if (component) {
-                    openComponentModal(component, category);
-                }
+    // Check for clicks on placed components first
+    let clickedOnComponent = false;
+    for (const [category, component] of Object.entries(state.build)) {
+        if (component && state.componentPositions[category]) {
+            const pos = state.componentPositions[category];
+            if (x >= pos.x && x <= pos.x + pos.width && 
+                y >= pos.y && y <= pos.y + pos.height) {
+                
+                state.selectedOnCanvas = category;
+                clickedOnComponent = true;
+                drawPC();
+                break;
             }
-            break;
         }
+    }
+    
+    // If not clicked on component, deselect
+    if (!clickedOnComponent) {
+        state.selectedOnCanvas = null;
+        drawPC();
     }
 }
 
-// Canvas drag and drop support
-canvas.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    canvas.style.borderColor = '#667eea';
-    canvas.style.boxShadow = '0 0 10px rgba(102, 126, 234, 0.5)';
-});
-
-canvas.addEventListener('dragleave', () => {
-    canvas.style.borderColor = '#e0e0e0';
-    canvas.style.boxShadow = 'none';
-});
-
-// Canvas mouse tracking
-canvas.addEventListener('mousemove', (e) => {
-    const rect = canvas.getBoundingClientRect();
-    state.mouseX = e.clientX - rect.left;
-    state.mouseY = e.clientY - rect.top;
-});
-
-canvas.addEventListener('mouseleave', () => {
-    state.hoveredSlot = null;
-});
-
-// Open component details modal
+// ==================== COMPONENT MODAL ====================
 function openComponentModal(component, category) {
-    state.selectedComponent = { ...component, category };
     const modal = document.getElementById('componentModal');
-    const detailsDiv = document.getElementById('componentDetails');
+    if (!modal) return;
     
-    let detailsHTML = `<h3>${component.name}</h3>`;
+    state.selectedComponent = component;
+    state.componentDetails = { component, category };
     
-    // Display different details based on component type
-    for (const [key, value] of Object.entries(component)) {
-        if (key !== 'id' && key !== 'brand' && key !== 'name') {
-            let displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-            detailsHTML += `
-                <div class="detail-item">
-                    <span class="detail-label">${displayKey}:</span>
-                    <span class="detail-value">${value}</span>
-                </div>
-            `;
-        }
+    // Update header
+    const headerDiv = modal.querySelector('.component-details-header');
+    if (headerDiv) {
+        headerDiv.innerHTML = `
+            <h3>${component.name}</h3>
+            <p class="component-brand">${component.brand || 'Generic'}</p>
+        `;
     }
     
-    detailsDiv.innerHTML = detailsHTML;
+    // Update specs
+    const specsDiv = modal.querySelector('.component-specs-grid');
+    if (specsDiv) {
+        specsDiv.innerHTML = buildComponentDetailsHTML(component, category);
+    }
+    
+    // Setup add button
+    const addBtn = modal.querySelector('#addComponentBtn');
+    if (addBtn) {
+        addBtn.textContent = state.build[category] ? 'Replace Component' : 'Add to Build';
+        addBtn.onclick = () => {
+            addComponentToBuild(component, category);
+            modal.style.display = 'none';
+        };
+    }
+    
     modal.style.display = 'block';
 }
 
-// Add component to build
+function buildComponentDetailsHTML(component, category) {
+    let html = '';
+    
+    const specMap = {
+        cpu: ['model', 'cores', 'threads', 'clockSpeed', 'tdp', 'socket', 'architecture', 'cache'],
+        motherboard: ['model', 'chipset', 'socket', 'formFactor', 'ramSlots', 'pciSlots', 'features'],
+        ram: ['model', 'capacity', 'speed', 'type', 'latency', 'voltage'],
+        gpu: ['model', 'gMemory', 'memoryType', 'architecture', 'tdp', 'connectivity'],
+        storage: ['model', 'capacity', 'type', 'interface', 'readSpeed', 'writeSpeed', 'formFactor'],
+        psu: ['model', 'wattage', 'efficiency', 'modularity', 'connectors'],
+        case: ['model', 'formFactor', 'material', 'color', 'driveBays', 'features'],
+        cooler: ['model', 'type', 'maxTDP', 'noise', 'compatibility']
+    };
+    
+    const specs = specMap[category] || [];
+    specs.forEach(specKey => {
+        if (component[specKey] !== undefined && component[specKey] !== null) {
+            const label = specKey.replace(/([A-Z])/g, ' $1').trim();
+            const value = component[specKey];
+            html += `
+                <div class="spec-item">
+                    <div class="spec-label">${label}</div>
+                    <div class="spec-value">${value}</div>
+                </div>
+            `;
+        }
+    });
+    
+    // Add price at the end
+    html += `
+        <div class="spec-item" style="grid-column: 1 / -1; background: #e8f4f8; border-left: 3px solid #27ae60;">
+            <div class="spec-label">Price</div>
+            <div class="spec-value" style="color: #27ae60; font-size: 1.2em;">$${component.price || 'N/A'}</div>
+        </div>
+    `;
+    
+    return html;
+}
+
+// ==================== BUILD MANAGEMENT ====================
 function addComponentToBuild(component, category) {
-    state.build[category] = component.id;
+    state.build[category] = component;
+    
+    // Initialize component position on canvas with random offset
+    if (!state.componentPositions[category]) {
+        const randomX = Math.random() * (canvas.width - 100);
+        const randomY = Math.random() * (canvas.height - 100);
+        state.componentPositions[category] = {
+            x: Math.max(0, randomX),
+            y: Math.max(0, randomY),
+            width: 80,
+            height: 60
+        };
+    }
+    
     updateBuildDisplay();
     checkCompatibility();
-    drawPC();
-    
-    // Close modal
-    document.getElementById('componentModal').style.display = 'none';
-}
-
-// Update build display on right panel
-function updateBuildDisplay() {
-    Object.entries(state.build).forEach(([category, componentId]) => {
-        const slot = document.querySelector(`[data-slot="${category}"]`);
-        if (slot) {
-            if (componentId) {
-                const allComponents = state.components[category] || [];
-                const component = allComponents.find(c => c.id === componentId);
-                if (component) {
-                    slot.querySelector('.slot-value').textContent = component.name;
-                    slot.style.borderLeftColor = componentColors[category];
-                }
-            } else {
-                slot.querySelector('.slot-value').textContent = 'Not selected';
-                slot.style.borderLeftColor = '#667eea';
-            }
-        }
-    });
     updateStats();
+    drawPC();
+    showNotification(`${component.name} added to build!`, 'success');
 }
 
-// Show animation when adding component
-let animationFrames = 0;
-let animatingSlot = null;
-
-function showAddAnimation(slot) {
-    animatingSlot = slot;
-    animationFrames = 0;
-}
-
-// Draw 2D PC visualization
-function drawPC() {
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+function updateBuildDisplay() {
+    const categories = ['cpu', 'motherboard', 'ram', 'gpu', 'storage', 'psu', 'case', 'cooler'];
     
-    // Draw background
-    ctx.fillStyle = '#f5f5f5';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Draw grid
-    drawGrid();
-    
-    // Draw title
-    ctx.fillStyle = '#333';
-    ctx.font = 'bold 16px Arial';
-    ctx.fillText('Interactive PC Assembly', 10, 20);
-    
-    // Draw components
-    drawComponentSlots();
-    
-    // Draw particles
-    state.particles = state.particles.filter(p => p.life > 0);
-    state.particles.forEach(p => {
-        p.update();
-        p.draw(ctx);
-    });
-    
-    // Draw tooltip if hovering
-    if (state.hoveredSlot) {
-        drawTooltip();
-    }
-}
-
-function drawGrid() {
-    ctx.strokeStyle = '#e0e0e0';
-    ctx.lineWidth = 0.5;
-    for (let i = 0; i < canvas.width; i += 20) {
-        ctx.beginPath();
-        ctx.moveTo(i, 0);
-        ctx.lineTo(i, canvas.height);
-        ctx.stroke();
-    }
-    for (let i = 0; i < canvas.height; i += 20) {
-        ctx.beginPath();
-        ctx.moveTo(0, i);
-        ctx.lineTo(canvas.width, i);
-        ctx.stroke();
-    }
-}
-
-function drawComponentSlots() {
-    // Sort by order
-    const sortedSlots = Object.entries(componentPositions).sort((a, b) => a[1].order - b[1].order);
-    
-    sortedSlots.forEach(([slotName, pos]) => {
-        // Map slot names to categories
-        const categoryMap = {
-            case: 'case',
-            motherboard: 'motherboard',
-            cpu: 'cpu',
-            cooler: 'cooler',
-            ram: 'ram',
-            gpu: 'gpu',
-            psu: 'psu',
-            storage: 'storage'
-        };
+    // Update each slot based on data-slot attribute
+    categories.forEach(category => {
+        const slot = document.querySelector(`.component-slot[data-slot="${category}"]`);
+        if (!slot) return;
         
-        const category = categoryMap[slotName];
-        const isInstalled = state.build[category] !== null;
-        const isHovered = state.hoveredSlot === slotName;
+        const slotValue = slot.querySelector('.slot-value');
+        const removeBtn = slot.querySelector('.remove-btn');
         
-        // Draw slot background
-        if (isHovered) {
-            ctx.fillStyle = componentColors[category] + '30'; // 30% opacity
-            ctx.shadowColor = componentColors[category];
-            ctx.shadowBlur = 15;
-            ctx.shadowOffsetX = 0;
-            ctx.shadowOffsetY = 0;
-        } else {
-            ctx.fillStyle = isInstalled ? componentColors[category] : '#e8e8e8';
-            ctx.shadowColor = 'transparent';
-            ctx.shadowBlur = 0;
-        }
-        
-        ctx.fillRect(pos.x, pos.y, pos.width, pos.height);
-        
-        // Draw border
-        ctx.strokeStyle = isHovered ? componentColors[category] : '#999';
-        ctx.lineWidth = isHovered ? 3 : 2;
-        ctx.strokeRect(pos.x, pos.y, pos.width, pos.height);
-        
-        // Draw label
-        ctx.fillStyle = isInstalled ? '#fff' : '#666';
-        ctx.font = 'bold 12px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(pos.label, pos.x + pos.width / 2, pos.y + pos.height / 2 - 10);
-        
-        // Draw component name if installed
-        if (isInstalled) {
-            const component = state.components[category]?.find(c => c.id === state.build[category]);
-            if (component) {
-                ctx.fillStyle = '#fff';
-                ctx.font = '10px Arial';
-                const text = component.name.substring(0, 15);
-                ctx.fillText(text, pos.x + pos.width / 2, pos.y + pos.height / 2 + 10);
-                
-                // Draw price
-                ctx.fillStyle = '#ffeb3b';
-                ctx.font = 'bold 9px Arial';
-                ctx.fillText(`$${component.price}`, pos.x + pos.width / 2, pos.y + pos.height / 2 + 22);
-            }
-        } else {
-            // Draw "empty" indicator
-            ctx.fillStyle = '#999';
-            ctx.font = '10px Arial';
-            ctx.fillText('Empty', pos.x + pos.width / 2, pos.y + pos.height / 2 + 10);
+        if (state.build[category]) {
+            const component = state.build[category];
+            slotValue.textContent = component.name;
+            slotValue.style.color = '#667eea';
+            slot.style.borderLeftColor = componentColors[category];
             
-            if (isHovered) {
-                ctx.fillStyle = componentColors[category];
-                ctx.font = '9px Arial';
-                ctx.fillText('Drop here', pos.x + pos.width / 2, pos.y + pos.height / 2 + 22);
+            // Setup remove button
+            if (removeBtn) {
+                removeBtn.style.display = 'block';
+                removeBtn.onclick = (e) => {
+                    e.preventDefault();
+                    removeComponent(category);
+                };
+            }
+        } else {
+            slotValue.textContent = 'Not selected';
+            slotValue.style.color = '#999';
+            slot.style.borderLeftColor = '#667eea';
+            
+            // Hide remove button
+            if (removeBtn) {
+                removeBtn.style.display = 'none';
             }
         }
-        
-        ctx.shadowColor = 'transparent';
     });
 }
 
-function drawTooltip() {
-    const pos = componentPositions[state.hoveredSlot];
-    const categoryMap = {
-        case: 'case', motherboard: 'motherboard', cpu: 'cpu', cooler: 'cooler',
-        ram: 'ram', gpu: 'gpu', psu: 'psu', storage: 'storage'
-    };
-    const category = categoryMap[state.hoveredSlot];
-    const component = state.components[category]?.find(c => c.id === state.build[category]);
-    
-    if (component) {
-        // Show installed component tooltip
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-        ctx.fillRect(state.mouseX + 10, state.mouseY - 30, 150, 50);
-        
-        ctx.fillStyle = '#fff';
-        ctx.font = 'bold 11px Arial';
-        ctx.textAlign = 'left';
-        ctx.fillText(component.name.substring(0, 20), state.mouseX + 15, state.mouseY - 10);
-        
-        ctx.font = '10px Arial';
-        ctx.fillStyle = '#ffeb3b';
-        ctx.fillText(`$${component.price} | ${component.power}W`, state.mouseX + 15, state.mouseY + 5);
-        ctx.fillStyle = '#4CAF50';
-        ctx.fillText('🖱️ Click to view details', state.mouseX + 15, state.mouseY + 18);
+function removeComponent(category) {
+    state.build[category] = null;
+    state.componentPositions[category] = null;
+    state.selectedOnCanvas = null;
+    updateBuildDisplay();
+    checkCompatibility();
+    updateStats();
+    drawPC();
+    showNotification(`${category} removed from build`, 'info');
+}
+
+function clearBuild() {
+    if (confirm('Are you sure you want to clear the entire build?')) {
+        state.build = {
+            cpu: null,
+            motherboard: null,
+            ram: null,
+            gpu: null,
+            storage: null,
+            psu: null,
+            case: null,
+            cooler: null
+        };
+        state.componentPositions = {};
+        state.selectedOnCanvas = null;
+        updateBuildDisplay();
+        checkCompatibility();
+        updateStats();
+        drawPC();
+        showNotification('Build cleared', 'info');
     }
 }
 
-// Check compatibility
+// ==================== COMPATIBILITY CHECK ====================
 async function checkCompatibility() {
     try {
         const response = await fetch('/api/compatibility', {
@@ -568,33 +722,41 @@ async function checkCompatibility() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(state.build)
         });
-        const result = await response.json();
-        
-        const statusDiv = document.getElementById('compatibilityStatus');
-        const issuesDiv = document.getElementById('compatibilityIssues');
-        
-        if (result.compatible) {
-            statusDiv.className = 'compatibility-status compatible';
-            statusDiv.textContent = '✓ All components compatible';
-            issuesDiv.className = 'compatibility-issues';
-        } else {
-            statusDiv.className = 'compatibility-status incompatible';
-            statusDiv.textContent = '✗ Compatibility issues found';
-            
-            let issuesHTML = '<ul>';
-            result.issues.forEach(issue => {
-                issuesHTML += `<li>${issue}</li>`;
-            });
-            issuesHTML += '</ul>';
-            issuesDiv.innerHTML = issuesHTML;
-            issuesDiv.className = 'compatibility-issues show';
-        }
+        const data = await response.json();
+        state.compatibility = {
+            compatible: data.compatible,
+            issues: data.issues || []
+        };
+        displayCompatibilityStatus();
     } catch (error) {
         console.error('Error checking compatibility:', error);
     }
 }
 
-// Update build statistics
+function displayCompatibilityStatus() {
+    const statusDiv = document.querySelector('.compatibility-status');
+    const issuesDiv = document.querySelector('.compatibility-issues');
+    
+    if (!statusDiv) return;
+    
+    statusDiv.className = `compatibility-status ${state.compatibility.compatible ? 'compatible' : 'incompatible'}`;
+    statusDiv.innerHTML = state.compatibility.compatible 
+        ? '✓ Build is compatible!' 
+        : '✗ Compatibility issues found';
+    
+    if (issuesDiv) {
+        if (state.compatibility.issues.length > 0) {
+            issuesDiv.innerHTML = '<ul>' + 
+                state.compatibility.issues.map(issue => `<li>${issue}</li>`).join('') + 
+                '</ul>';
+            issuesDiv.classList.add('show');
+        } else {
+            issuesDiv.classList.remove('show');
+        }
+    }
+}
+
+// ==================== STATISTICS ====================
 async function updateStats() {
     try {
         const response = await fetch('/api/stats', {
@@ -602,214 +764,467 @@ async function updateStats() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(state.build)
         });
-        const stats = await response.json();
-        
-        document.getElementById('totalPrice').textContent = `$${stats.totalPrice}`;
-        document.getElementById('powerConsumption').textContent = `${stats.totalPower}W`;
-        document.getElementById('totalRam').textContent = `${stats.memoryGB.toFixed(1)}GB`;
-        document.getElementById('totalStorage').textContent = `${stats.storageGB}GB`;
+        const data = await response.json();
+        state.stats = data;
+        displayStats();
     } catch (error) {
         console.error('Error updating stats:', error);
     }
 }
 
-// Remove component from build
-function removeComponent(category) {
-    state.build[category] = null;
-    updateBuildDisplay();
-    checkCompatibility();
-    drawPC();
-    showNotification(`✓ ${category.toUpperCase()} removed`);
+function displayStats() {
+    const statsDiv = document.querySelector('.build-stats');
+    if (!statsDiv) return;
+    
+    statsDiv.innerHTML = `
+        <div class="stat-item">
+            <div class="stat-label">Total Power</div>
+            <div class="stat-value">${state.stats.totalPower || 0}W</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">Total Cost</div>
+            <div class="stat-value">$${(state.stats.totalCost || 0).toFixed(2)}</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">RAM</div>
+            <div class="stat-value">${state.stats.totalMemory || 0}GB</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">GPU Memory</div>
+            <div class="stat-value">${state.stats.gpuMemory || 0}GB</div>
+        </div>
+    `;
 }
 
-// Clear all components
-function clearBuild() {
-    if (confirm('⚠️ Remove all components? This action cannot be undone.')) {
-        state.build = {
-            cpu: null, motherboard: null, ram: null, gpu: null,
-            storage: null, psu: null, case: null, cooler: null
-        };
-        updateBuildDisplay();
-        checkCompatibility();
-        drawPC();
-        showNotification('🗑️ Build cleared');
-    }
-}
-
-// Save build
+// ==================== BUILD SAVE/LOAD ====================
 function saveBuild() {
-    if (Object.values(state.build).every(v => v === null)) {
-        showNotification('❌ Add at least one component first');
+    const modal = document.getElementById('saveBuildModal');
+    if (!modal) {
+        showNotification('Save modal not available', 'error');
         return;
     }
-    document.getElementById('saveBuildModal').style.display = 'block';
-}
-
-// Confirm save
-async function confirmSave() {
-    const buildName = document.getElementById('buildNameInput').value || 'Untitled Build';
     
-    try {
-        const response = await fetch('/api/builds', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: buildName, ...state.build })
-        });
-        
-        const result = await response.json();
-        showNotification(`💾 Build saved: "${buildName}"`);
-        document.getElementById('saveBuildModal').style.display = 'none';
-        document.getElementById('buildNameInput').value = '';
-    } catch (error) {
-        console.error('Error saving build:', error);
-        showNotification('❌ Error saving build');
+    const input = modal.querySelector('#buildNameInput');
+    if (input) {
+        input.value = 'My Build';
+        input.focus();
     }
+    
+    // Setup confirm button
+    const confirmBtn = modal.querySelector('#confirmSaveBtn');
+    if (confirmBtn) {
+        confirmBtn.onclick = async () => {
+            const buildName = input.value.trim() || 'My Build';
+            try {
+                const response = await fetch('/api/builds', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: buildName,
+                        components: state.build,
+                        stats: state.stats
+                    })
+                });
+                const data = await response.json();
+                if (data.success || response.ok) {
+                    showNotification(`Build "${buildName}" saved!`, 'success');
+                    modal.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error saving build:', error);
+                showNotification('Error saving build', 'error');
+            }
+        };
+    }
+    
+    modal.style.display = 'block';
 }
 
-// Load build
 async function loadBuild() {
+    const modal = document.getElementById('loadBuildModal');
+    if (!modal) {
+        showNotification('Load modal not available', 'error');
+        return;
+    }
+    
     try {
         const response = await fetch('/api/builds');
         const builds = await response.json();
         
-        const buildsList = document.getElementById('buildsList');
-        buildsList.innerHTML = '';
+        const list = modal.querySelector('#buildsList');
+        if (!list) {
+            showNotification('Builds list element not found', 'error');
+            return;
+        }
+        
+        list.innerHTML = '';
         
         if (builds.length === 0) {
-            buildsList.innerHTML = '<p style="text-align: center; color: #999;">No saved builds yet</p>';
+            list.innerHTML = '<p style="padding: 20px; text-align: center;">No saved builds</p>';
         } else {
             builds.forEach(build => {
-                const div = document.createElement('div');
-                div.className = 'build-item';
-                const date = new Date(build.created_at).toLocaleDateString();
-                div.innerHTML = `
-                    <div>
-                        <div class="build-item-name">${build.name}</div>
-                        <div class="build-item-date">${date}</div>
-                    </div>
+                const item = document.createElement('div');
+                item.className = 'build-item';
+                item.innerHTML = `
+                    <div class="build-item-name">${build.name}</div>
+                    <div class="build-item-date">${new Date(build.date || build.created_at).toLocaleDateString()}</div>
                     <div class="build-item-actions">
-                        <button onclick="loadBuildData('${build.id}')">Load</button>
-                        <button onclick="deleteBuild('${build.id}')">Delete</button>
+                        <button class="btn btn-primary" onclick="loadBuildData('${build.id}')">Load</button>
+                        <button class="btn btn-secondary" onclick="deleteBuild('${build.id}')">Delete</button>
                     </div>
                 `;
-                buildsList.appendChild(div);
+                list.appendChild(item);
             });
         }
         
-        document.getElementById('loadBuildModal').style.display = 'block';
+        modal.style.display = 'block';
     } catch (error) {
         console.error('Error loading builds:', error);
+        showNotification('Error loading builds', 'error');
     }
 }
 
-// Load specific build data
 async function loadBuildData(buildId) {
     try {
         const response = await fetch(`/api/builds/${buildId}`);
         const build = await response.json();
         
-        state.build = {
-            cpu: build.cpu || null,
-            motherboard: build.motherboard || null,
-            ram: build.ram || null,
-            gpu: build.gpu || null,
-            storage: build.storage || null,
-            psu: build.psu || null,
-            case: build.case || null,
-            cooler: build.cooler || null
-        };
+        state.build = build.components;
+        state.stats = build.stats;
+        
+        // Reset component positions for loaded build
+        state.componentPositions = {};
+        const categories = ['cpu', 'motherboard', 'ram', 'gpu', 'storage', 'psu', 'case', 'cooler'];
+        categories.forEach(category => {
+            if (state.build[category]) {
+                const randomX = Math.random() * (canvas.width - 100);
+                const randomY = Math.random() * (canvas.height - 100);
+                state.componentPositions[category] = {
+                    x: Math.max(0, randomX),
+                    y: Math.max(0, randomY),
+                    width: 80,
+                    height: 60
+                };
+            }
+        });
         
         updateBuildDisplay();
         checkCompatibility();
+        updateStats();
         drawPC();
         
-        document.getElementById('loadBuildModal').style.display = 'none';
-        showNotification(`✓ Loaded: ${build.name}`);
+        const modal = document.getElementById('loadBuildModal');
+        if (modal) modal.style.display = 'none';
+        
+        showNotification(`Build "${build.name}" loaded!`, 'success');
     } catch (error) {
         console.error('Error loading build:', error);
+        showNotification('Error loading build', 'error');
     }
 }
 
-// Delete build
 async function deleteBuild(buildId) {
     if (confirm('Delete this build?')) {
         try {
             await fetch(`/api/builds/${buildId}`, { method: 'DELETE' });
             loadBuild();
-            showNotification('🗑️ Build deleted');
+            showNotification('Build deleted', 'info');
         } catch (error) {
             console.error('Error deleting build:', error);
+            showNotification('Error deleting build', 'error');
         }
     }
 }
 
-// Setup event listeners
+// ==================== CANVAS DRAWING ====================
+function drawPC() {
+    const width = canvas.offsetWidth;
+    const height = canvas.offsetHeight;
+    canvas.width = width;
+    canvas.height = height;
+    
+    // Clear canvas with gradient background
+    const gradient = ctx.createLinearGradient(0, 0, 0, height);
+    gradient.addColorStop(0, '#f5f7fa');
+    gradient.addColorStop(1, '#c3cfe2');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, width, height);
+    
+    drawGrid();
+    drawComponentSlots();
+    drawPlacedComponents();
+    drawParticles();
+    drawTooltip();
+    drawSelectedHighlight();
+}
+
+function drawGrid() {
+    ctx.strokeStyle = 'rgba(200, 200, 200, 0.2)';
+    ctx.lineWidth = 0.5;
+    const gridSize = 20;
+    
+    for (let x = 0; x < canvas.width; x += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+    }
+    
+    for (let y = 0; y < canvas.height; y += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+    }
+}
+
+function drawComponentSlots() {
+    Object.entries(componentPositions).forEach(([category, pos]) => {
+        const component = state.build[category];
+        const isHovered = state.hoveredSlot === category;
+        const isOccupied = !!component;
+        
+        // Draw slot background
+        ctx.fillStyle = isHovered ? componentColors[category] + '40' : componentColors[category] + '20';
+        ctx.fillRect(pos.x, pos.y, pos.width, pos.height);
+        
+        // Draw slot border
+        ctx.strokeStyle = isHovered ? componentColors[category] : '#999';
+        ctx.lineWidth = isHovered ? 3 : 2;
+        ctx.strokeRect(pos.x, pos.y, pos.width, pos.height);
+        
+        // Draw label
+        ctx.fillStyle = '#333';
+        ctx.font = 'bold 12px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(pos.label, pos.x + pos.width / 2, pos.y + 18);
+        
+        // Draw component name if present
+        if (isOccupied && component) {
+            ctx.fillStyle = '#666';
+            ctx.font = '11px Arial';
+            const text = component.name.substring(0, 12) + (component.name.length > 12 ? '...' : '');
+            ctx.fillText(text, pos.x + pos.width / 2, pos.y + pos.height / 2 + 5);
+        } else {
+            ctx.fillStyle = '#aaa';
+            ctx.font = '10px Arial';
+            ctx.fillText('Empty', pos.x + pos.width / 2, pos.y + pos.height / 2 + 5);
+        }
+    });
+}
+
+// ==================== PLACED COMPONENTS RENDERING (IMPORT-READY) ====================
+function drawPlacedComponents() {
+    // Draw components that have been placed and moved on the canvas
+    const categories = ['cpu', 'motherboard', 'ram', 'gpu', 'storage', 'psu', 'case', 'cooler'];
+    
+    categories.forEach(category => {
+        if (state.build[category] && state.componentPositions[category]) {
+            drawComponent(category, state.build[category], state.componentPositions[category]);
+        }
+    });
+}
+
+function drawComponent(category, component, position) {
+    const pos = position;
+    const width = pos.width || 80;
+    const height = pos.height || 60;
+    
+    const isSelected = state.selectedOnCanvas === category;
+    
+    // ==================== COMPONENT DESIGN PLACEHOLDER ====================
+    // This structure is ready for importing component images/designs
+    // Simply replace the drawing code below with: ctx.drawImage(componentImages[category], pos.x, pos.y, width, height);
+    
+    // Draw component background
+    ctx.fillStyle = isSelected ? componentColors[category] : componentColors[category] + 'dd';
+    ctx.fillRect(pos.x, pos.y, width, height);
+    
+    // Draw border
+    ctx.strokeStyle = isSelected ? '#FFD700' : componentColors[category];
+    ctx.lineWidth = isSelected ? 3 : 2;
+    ctx.strokeRect(pos.x, pos.y, width, height);
+    
+    // Draw component label and info
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 10px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(category.toUpperCase(), pos.x + width / 2, pos.y + 15);
+    
+    ctx.font = '9px Arial';
+    ctx.fillStyle = '#fff';
+    const name = component.name.substring(0, 10);
+    ctx.fillText(name, pos.x + width / 2, pos.y + 32);
+    
+    // Draw price if space available
+    if (component.price) {
+        ctx.fillStyle = '#FFD700';
+        ctx.font = 'bold 8px Arial';
+        ctx.fillText(`$${component.price}`, pos.x + width / 2, pos.y + 45);
+    }
+    
+    // Draw drag handle indicator if selected
+    if (isSelected) {
+        ctx.strokeStyle = '#FFD700';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.strokeRect(pos.x - 2, pos.y - 2, width + 4, height + 4);
+        ctx.setLineDash([]);
+        
+        // Draw move cursor icon
+        ctx.fillStyle = '#FFD700';
+        ctx.font = 'bold 12px Arial';
+        ctx.fillText('⟷', pos.x + width / 2, pos.y - 8);
+    }
+}
+
+function drawSelectedHighlight() {
+    if (state.selectedOnCanvas) {
+        const category = state.selectedOnCanvas;
+        const pos = state.componentPositions[category];
+        
+        if (pos) {
+            // Draw selection indicator
+            ctx.strokeStyle = '#FFD700';
+            ctx.lineWidth = 2;
+            ctx.globalAlpha = 0.3;
+            ctx.strokeRect(pos.x - 5, pos.y - 5, (pos.width || 80) + 10, (pos.height || 60) + 10);
+            ctx.globalAlpha = 1;
+        }
+    }
+}
+
+function drawParticles() {
+    state.particles.forEach((particle, index) => {
+        particle.update();
+        if (particle.life <= 0) {
+            state.particles.splice(index, 1);
+        } else {
+            particle.draw(ctx);
+        }
+    });
+}
+
+function drawTooltip() {
+    if (state.hoveredSlot && !state.build[state.hoveredSlot]) {
+        const pos = componentPositions[state.hoveredSlot];
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        ctx.fillRect(state.mouseX + 10, state.mouseY + 10, 150, 40);
+        
+        ctx.fillStyle = '#fff';
+        ctx.font = '12px Arial';
+        ctx.fillText(`Drop ${state.hoveredSlot} here`, state.mouseX + 20, state.mouseY + 25);
+    }
+    
+    // Draw info about selected component
+    if (state.selectedOnCanvas && state.componentPositions[state.selectedOnCanvas]) {
+        const component = state.build[state.selectedOnCanvas];
+        if (component) {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+            ctx.fillRect(state.mouseX + 10, state.mouseY - 50, 180, 50);
+            
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 11px Arial';
+            ctx.fillText(component.name.substring(0, 20), state.mouseX + 15, state.mouseY - 30);
+            
+            ctx.font = '9px Arial';
+            ctx.fillStyle = '#FFD700';
+            ctx.fillText(`💰 $${component.price}`, state.mouseX + 15, state.mouseY - 15);
+            
+            ctx.fillStyle = '#4CAF50';
+            ctx.fillText('🖱️ Drag to move', state.mouseX + 15, state.mouseY - 3);
+        }
+    }
+}
+
+function showAddAnimation(slot) {
+    const pos = componentPositions[slot];
+    const centerX = pos.x + pos.width / 2;
+    const centerY = pos.y + pos.height / 2;
+    
+    for (let i = 0; i < 8; i++) {
+        state.particles.push(new Particle(centerX, centerY, componentColors[slot]));
+    }
+}
+
+// ==================== ANIMATION LOOP ====================
+function startAnimationLoop() {
+    function animate() {
+        drawPC();
+        requestAnimationFrame(animate);
+    }
+    animate();
+}
+
+// ==================== EVENT LISTENERS ====================
 function setupEventListeners() {
-    // Category tabs
-    document.querySelectorAll('.category-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            displayComponents(btn.dataset.category);
-        });
-    });
-    
-    // Remove component buttons
-    document.querySelectorAll('.remove-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const slot = e.target.closest('.component-slot');
-            removeComponent(slot.dataset.slot);
-        });
-    });
-    
-    // Build action buttons
-    document.getElementById('saveBuildBtn').addEventListener('click', saveBuild);
-    document.getElementById('clearBuildBtn').addEventListener('click', clearBuild);
-    document.getElementById('loadBuildBtn').addEventListener('click', loadBuild);
-    document.getElementById('confirmSaveBtn').addEventListener('click', confirmSave);
-    
     // Modal close buttons
     document.querySelectorAll('.close').forEach(closeBtn => {
-        closeBtn.addEventListener('click', (e) => {
-            e.target.closest('.modal').style.display = 'none';
-        });
+        closeBtn.onclick = function(e) {
+            e.preventDefault();
+            this.closest('.modal').style.display = 'none';
+        };
     });
     
-    // Modal click outside to close
-    window.addEventListener('click', (e) => {
-        if (e.target.classList.contains('modal')) {
-            e.target.style.display = 'none';
+    // Outside click closes modal
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = 'none';
         }
-    });
+    };
     
-    // Add component button in modal
-    document.getElementById('addComponentBtn').addEventListener('click', () => {
-        if (state.selectedComponent) {
-            addComponentToBuild(state.selectedComponent, state.selectedComponent.category);
-            showNotification(`✓ ${state.selectedComponent.name} added!`);
-        }
+    // Build action buttons
+    const clearBtn = document.getElementById('clearBuildBtn');
+    const saveBtn = document.getElementById('saveBuildBtn');
+    const loadBtn = document.getElementById('loadBuildBtn');
+    
+    if (clearBtn) clearBtn.onclick = (e) => { e.preventDefault(); clearBuild(); };
+    if (saveBtn) saveBtn.onclick = (e) => { e.preventDefault(); saveBuild(); };
+    if (loadBtn) loadBtn.onclick = (e) => { e.preventDefault(); loadBuild(); };
+    
+    // Setup remove buttons for component slots
+    document.querySelectorAll('.component-slot .remove-btn').forEach(btn => {
+        btn.onclick = (e) => {
+            e.preventDefault();
+            const slot = e.target.closest('.component-slot');
+            const category = slot.dataset.slot;
+            removeComponent(category);
+        };
     });
 }
 
-// Show notification toast
-function showNotification(message) {
+// ==================== NOTIFICATIONS ====================
+function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
-    notification.className = 'notification';
+    notification.className = `notification ${type}`;
     notification.textContent = message;
+    notification.style.position = 'fixed';
+    notification.style.bottom = '20px';
+    notification.style.right = '20px';
+    notification.style.padding = '15px 20px';
+    notification.style.borderRadius = '6px';
+    notification.style.color = 'white';
+    notification.style.fontSize = '14px';
+    notification.style.zIndex = '10000';
+    notification.style.animation = 'slideInUp 0.3s ease';
+    
+    if (type === 'success') {
+        notification.style.backgroundColor = '#27ae60';
+    } else if (type === 'error') {
+        notification.style.backgroundColor = '#e74c3c';
+    } else {
+        notification.style.backgroundColor = '#3498db';
+    }
+    
     document.body.appendChild(notification);
     
-    setTimeout(() => notification.remove(), 3000);
+    setTimeout(() => {
+        notification.style.animation = 'slideOutDown 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
 }
 
-// Animation loop
-function animationLoop() {
-    drawPC();
-    requestAnimationFrame(animationLoop);
-}
-
-// Handle window resize
+// ==================== WINDOW RESIZE HANDLER ====================
 window.addEventListener('resize', () => {
     drawPC();
 });
-    requestAnimationFrame(animate);
-

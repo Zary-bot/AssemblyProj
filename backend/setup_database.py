@@ -53,7 +53,7 @@ def create_database_if_not_exists():
 
 
 def load_schema():
-    """Load schema.sql into the database."""
+    """Load database_schema_fixed.sql into the database."""
     try:
         conn = psycopg2.connect(
             host=DB_HOST,
@@ -64,11 +64,11 @@ def load_schema():
         )
         cursor = conn.cursor()
 
-        schema_file = BASE_DIR / "schema.sql"
+        schema_file = BASE_DIR / "database_schema_fixed.sql"
         with open(schema_file, "r") as f:
             schema_sql = f.read()
 
-        print("Loading schema.sql (tables + sample data)...")
+        print("Loading database_schema_fixed.sql (tables + sample data)...")
         cursor.execute(schema_sql)
         conn.commit()
         print("✓ Schema loaded successfully")
@@ -93,7 +93,7 @@ def verify_data():
         )
         cursor = conn.cursor()
 
-        tables = ["brands", "cpus", "motherboards", "ram_modules", "gpus", "psus", "storage_drives", "pc_cases"]
+        tables = ["admin_cpu", "admin_mobo", "admin_ram", "admin_gpu", "admin_psu", "admin_ssd", "admin_hdd", "admin_fan", "compatibility_test_cases", "admin_users", "saved_builds"]
         print("\nRow counts:")
         for table in tables:
             cursor.execute(f"SELECT COUNT(*) FROM {table}")

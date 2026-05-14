@@ -42,15 +42,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
 .view-btn svg{width:13px;height:13px;}
 
 .topbar-right{display:flex;align-items:center;gap:8px;}
-.timer-wrap{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:5px 12px;}
-.timer-display{font-family:'DM Mono',monospace;font-size:16px;font-weight:500;color:#fff;letter-spacing:2px;min-width:60px;}
-.timer-display.warning{color:var(--amber);}
-.timer-display.danger{color:var(--red);animation:blink .8s infinite;}
-@keyframes blink{50%{opacity:.4;}}
-.timer-btn{width:24px;height:24px;border-radius:5px;border:none;background:rgba(255,255,255,.08);color:#94a3b8;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
-.timer-btn:hover{background:rgba(255,255,255,.15);color:#fff;}
-.timer-btn svg{width:11px;height:11px;}
-
 .btn-sm{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:7px;font-size:12px;font-weight:500;border:none;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif;}
 .btn-green{background:var(--green);color:#fff;}.btn-green:hover{background:var(--green-dk);}
 .btn-ghost{background:rgba(255,255,255,.07);color:#94a3b8;border:1px solid rgba(255,255,255,.1);}.btn-ghost:hover{background:rgba(255,255,255,.13);color:#fff;}
@@ -58,6 +49,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
 .btn-red{background:#ef4444;color:#fff;}.btn-red:hover{background:#dc2626;}
 .btn-blue{background:#3b82f6;color:#fff;}.btn-blue:hover{background:#2563eb;}
 .btn-purple{background:#8b5cf6;color:#fff;}.btn-purple:hover{background:#7c3aed;}
+.btn-toplink-green{background:rgba(62,207,94,.12);border:1px solid rgba(62,207,94,.35);color:var(--green);font-family:'Sora',sans-serif;font-weight:700;}
+.btn-toplink-green:hover{background:rgba(62,207,94,.2);border-color:rgba(62,207,94,.55);color:var(--green);}
+.btn-toplink-green svg{stroke:currentColor;}
 
 /* -- MAIN LAYOUT -- */
 .main{display:flex;flex:1;overflow:hidden;}
@@ -250,13 +244,18 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
 .budget-nums{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);}
 
 /* Objectives */
-.obj-item{display:flex;align-items:flex-start;gap:8px;padding:8px 9px;border-radius:7px;border:1px solid var(--border);margin-bottom:4px;background:#f8fafc;}
-.obj-check{width:16px;height:16px;border-radius:4px;border:2px solid var(--border);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.obj-section-title{font-family:'Sora',sans-serif;font-size:10px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin:10px 0 6px;}
+.obj-item{display:flex;align-items:flex-start;gap:8px;padding:8px 9px;border-radius:7px;border:1px solid #fecaca;margin-bottom:4px;background:#fef2f2;}
+.obj-item.done{border-color:#bbf7d0;background:#f0fdf4;}
+.obj-check{width:16px;height:16px;border-radius:4px;border:2px solid var(--red);background:var(--red);color:#fff;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .2s;font-size:10px;font-weight:800;}
 .obj-check.done{background:var(--green);border-color:var(--green);}
-.obj-check.done svg{display:block;}
 .obj-check svg{display:none;width:8px;height:8px;}
-.obj-text{font-size:11px;color:var(--slate);line-height:1.4;}
-.obj-text.done-text{text-decoration:line-through;color:var(--faint);}
+.obj-check.done svg{display:block;}
+.obj-check.done .obj-x{display:none;}
+.obj-text{font-size:11px;color:#991b1b;line-height:1.4;font-weight:600;}
+.obj-item.done .obj-text{color:#166534;}
+.obj-sub{font-size:9px;color:#b91c1c;line-height:1.35;margin-top:2px;}
+.obj-item.done .obj-sub{color:#059669;}
 
 /* Grade */
 .grade-box{border-radius:10px;padding:14px;text-align:center;background:linear-gradient(135deg,#0d1b2e 0%,#112240 100%);border:1px solid rgba(255,255,255,.08);margin-bottom:10px;}
@@ -350,7 +349,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
       <span class="logo-name">Assembly PC</span>
     </a>
     <div class="scenario-badge"><span id="scenarioLabel">Simulator</span></div>
-    <span class="mode-badge mode-student" id="modeBadge">Student</span>
   </div>
 
   <div class="topbar-center">
@@ -369,11 +367,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
   </div>
 
   <div class="topbar-right">
-    <a href="/admin" class="btn-sm btn-ghost">
+    <a href="/admin/login?back=/simulator" class="btn-sm btn-toplink-green">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M2 17h20"/><path d="M6 21h12"/></svg>
       Admin
     </a>
-    <a href="/profile" class="btn-sm btn-ghost">
+    <a href="/profile" class="btn-sm btn-toplink-green">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       Profile
     </a>
@@ -382,17 +380,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
     <div class="power-controls">
       <span class="power-label" id="powerLabel">OFF</span>
       <button class="power-btn off" id="powerBtn" onclick="togglePower()" title="Power On/Off">?</button>
-    </div>
-
-    <div class="timer-wrap">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-      <span class="timer-display" id="timerDisplay">--:--</span>
-      <button class="timer-btn" onclick="toggleTimer()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" id="timerIcon"><polygon points="5 3 19 12 5 21 5 3" fill="currentColor"/></svg>
-      </button>
-      <button class="timer-btn" onclick="resetTimer()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-      </button>
     </div>
 
     <button class="btn-sm btn-amber" onclick="openScenarioModal()" id="btnScenario" style="display:none;">
@@ -604,7 +591,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
     <!-- TASKS -->
     <div class="rpanel-body" id="rtab-tasks" style="display:none;">
       <div class="rp-section">
-        <div class="rp-section-title">Build Objectives</div>
+        <div class="rp-section-title">Requisite Learning and Tasks</div>
         <div id="objectivesList"></div>
         <div id="gradePreview"></div>
       </div>

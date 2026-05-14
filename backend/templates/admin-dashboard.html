@@ -104,6 +104,8 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);heig
 .tt-search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:13px;height:13px;color:var(--faint);}
 .selection-info{font-size:12px;color:var(--muted);padding:5px 10px;background:var(--bg);border-radius:7px;display:none;}
 .selection-info.visible{display:block;}
+.shortcut-hint{font-size:11px;color:var(--faint);display:none;}
+.shortcut-hint.visible{display:inline;}
 .tt-right{display:flex;align-items:center;gap:6px;}
 .sort-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 11px;border-radius:7px;font-size:11px;font-weight:500;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s;}
 .sort-btn:hover{border-color:var(--slate2);color:var(--text);}
@@ -249,6 +251,10 @@ tbody td input[type=checkbox]{accent-color:var(--green);}
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
       Profile
     </button>
+    <button class="tb-btn btn-ghost" onclick="window.location.href='/admin/logout'">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M17 16l4-4m0 0l-4-4m4 4H9"/><path d="M13 5H6a2 2 0 00-2 2v10a2 2 0 002 2h7"/></svg>
+      Logout
+    </button>
     <div class="tb-stat">
       <span class="tb-stat-num" id="total-stat">0</span>
       <span class="tb-stat-label">Total Components</span>
@@ -360,7 +366,7 @@ tbody td input[type=checkbox]{accent-color:var(--green);}
         <select class="filter-select" id="brand-filter" onchange="applyFilters()">
           <option value="">All Brands</option>
         </select>
-        <button class="action-btn btn-danger" id="bulk-delete-btn" style="display:none" onclick="bulkDelete()">
+        <button class="action-btn btn-danger" id="bulk-delete-btn" style="display:none" onclick="bulkDelete()" title="Delete selected rows (Delete key)">
           <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6M10 11v6M14 11v6M9 6V4h6v2"/></svg>
           Delete Selected
         </button>
@@ -383,6 +389,7 @@ tbody td input[type=checkbox]{accent-color:var(--green);}
           Clear Search
         </button>
         <span class="selection-info" id="selection-info">0 selected</span>
+        <span class="shortcut-hint" id="selection-shortcut">Shift+Click selects a range</span>
       </div>
       <div class="tt-right">
         <span style="font-size:11px;color:var(--muted);" id="row-count">0 rows</span>
@@ -466,127 +473,62 @@ tbody td input[type=checkbox]{accent-color:var(--green);}
 
 <script>
 // ─── DATA ────────────────────────────────────────────────────────────────────
-const DB = {
-  cpu: [
-    {id:1,brand:'AMD',model:'Ryzen 7 9850X3D',family:'Ryzen 9000 Series',cores:'8/16',baseClock:'4.7 GHz',turboClock:'5.6 GHz',cache:'96 MB',igpu:'—',tdp:'120W',memSupport:'DDR5',socket:'Socket AM5',released:'2026-01-01'},
-    {id:2,brand:'AMD',model:'Ryzen 9 9950X3D Dual',family:'Ryzen 9000 Series',cores:'16/32',baseClock:'—',turboClock:'—',cache:'208 MB',igpu:'—',tdp:'200W',memSupport:'DDR5',socket:'Socket AM5',released:'2026-04-01'},
-    {id:3,brand:'AMD',model:'Ryzen AI 5 430',family:'Ryzen AI 300 Series',cores:'4/8',baseClock:'2.8 GHz',turboClock:'—',cache:'4 MB',igpu:'Integrated',tdp:'28W',memSupport:'LPDDR5',socket:'Socket FP8',released:'2026-01-01'},
-    {id:4,brand:'AMD',model:'Ryzen AI 5 435',family:'Ryzen AI 300 Series',cores:'6/12',baseClock:'3.0 GHz',turboClock:'—',cache:'4 MB',igpu:'Integrated',tdp:'28W',memSupport:'LPDDR5',socket:'Socket FP8',released:'2026-01-01'},
-    {id:5,brand:'AMD',model:'Ryzen AI 5 435G',family:'Ryzen AI 300 Series',cores:'6/12',baseClock:'3.0 GHz',turboClock:'—',cache:'4 MB',igpu:'Integrated',tdp:'65W',memSupport:'DDR5',socket:'Socket AM5',released:'2026-03-01'},
-    {id:6,brand:'AMD',model:'Ryzen AI 7 450G',family:'Ryzen AI 300 Series',cores:'8/16',baseClock:'3.4 GHz',turboClock:'—',cache:'8 MB',igpu:'Integrated',tdp:'65W',memSupport:'DDR5',socket:'Socket AM5',released:'2026-03-01'},
-    {id:7,brand:'Intel',model:'Core i5-12400',family:'12th Gen Intel Core',cores:'6',baseClock:'2.5 GHz',turboClock:'4.4 GHz',cache:'18 MB',igpu:'Intel UHD 730',tdp:'65W',memSupport:'DDR4/DDR5',socket:'LGA1700',released:'2021-11-04'},
-    {id:8,brand:'Intel',model:'Core i7-13700K',family:'13th Gen Intel Core',cores:'16',baseClock:'3.4 GHz',turboClock:'5.4 GHz',cache:'30 MB',igpu:'Intel UHD 770',tdp:'125W',memSupport:'DDR4/DDR5',socket:'LGA1700',released:'2022-10-20'},
-  ],
-  gpu: [
-    {id:1,brand:'NVIDIA',model:'GTX 1050',memType:'GDDR5',memCapacity:'2–3GB',busWidth:'128-bit',coreClock:'~1493 MHz',cudaCores:'640',tdp:'75W',psu:'300W',formFactor:'Dual',release:'2016'},
-    {id:2,brand:'NVIDIA',model:'GTX 1060',memType:'GDDR5',memCapacity:'3–6GB',busWidth:'192-bit',coreClock:'~1708 MHz',cudaCores:'1280',tdp:'120W',psu:'400W',formFactor:'Dual',release:'2016'},
-    {id:3,brand:'NVIDIA',model:'GTX 1080 Ti',memType:'GDDR5X',memCapacity:'11GB',busWidth:'352-bit',coreClock:'~1582 MHz',cudaCores:'3584',tdp:'250W',psu:'600W',formFactor:'Dual',release:'2017'},
-    {id:4,brand:'NVIDIA',model:'RTX 2060',memType:'GDDR6',memCapacity:'6GB',busWidth:'192-bit',coreClock:'~1680 MHz',cudaCores:'1920',tdp:'160W',psu:'500W',formFactor:'Dual',release:'2019'},
-    {id:5,brand:'NVIDIA',model:'RTX 3080',memType:'GDDR6X',memCapacity:'10GB',busWidth:'320-bit',coreClock:'~1710 MHz',cudaCores:'8704',tdp:'320W',psu:'750W',formFactor:'Triple',release:'2020'},
-    {id:6,brand:'NVIDIA',model:'RTX 4090',memType:'GDDR6X',memCapacity:'24GB',busWidth:'384-bit',coreClock:'~2520 MHz',cudaCores:'16384',tdp:'450W',psu:'850W',formFactor:'Triple',release:'2022'},
-    {id:7,brand:'AMD',model:'RX 7900 XTX',memType:'GDDR6',memCapacity:'24GB',busWidth:'384-bit',coreClock:'~2500 MHz',cudaCores:'6144 SP',tdp:'355W',psu:'800W',formFactor:'Triple',release:'2022'},
-    {id:8,brand:'AMD',model:'RX 7600',memType:'GDDR6',memCapacity:'8GB',busWidth:'128-bit',coreClock:'~2655 MHz',cudaCores:'2048 SP',tdp:'165W',psu:'550W',formFactor:'Dual',release:'2023'},
-  ],
-  psu: [
-    {id:1,brand:'Seasonic',model:'SEA-650B',powerOutput:'650W',psuType:'ATX',efficiency:'80+ Gold',inputVoltage:'100–240V',frequency:'50–60Hz',cooling:'140mm Fan',modular:'Semi-Modular',mainPower:'24-pin ATX',cpuPower:'2x 8-pin EPS',pcieConn:'3x 6+2-pin',sataConn:'5',warranty:'4 Years',released:'2019'},
-    {id:2,brand:'Cooler Master',model:'COO-750C',powerOutput:'750W',psuType:'ATX',efficiency:'80+ Silver',inputVoltage:'100–240V',frequency:'50–60Hz',cooling:'160mm Fan',modular:'Fully Modular',mainPower:'24-pin ATX',cpuPower:'1x 8-pin EPS',pcieConn:'4x 6+2-pin',sataConn:'6',warranty:'5 Years',released:'2020'},
-    {id:3,brand:'EVGA',model:'EVG-850D',powerOutput:'850W',psuType:'ATX',efficiency:'80+ Platinum',inputVoltage:'100–240V',frequency:'50–60Hz',cooling:'120mm Fan',modular:'Non-Modular',mainPower:'24-pin ATX',cpuPower:'2x 8-pin EPS',pcieConn:'5x 6+2-pin',sataConn:'7',warranty:'6 Years',released:'2021'},
-    {id:4,brand:'ASUS',model:'ASU-550F',powerOutput:'550W',psuType:'ATX',efficiency:'80+ Gold',inputVoltage:'100–240V',frequency:'50–60Hz',cooling:'160mm Fan',modular:'Fully Modular',mainPower:'24-pin ATX',cpuPower:'2x 8-pin EPS',pcieConn:'2x 6+2-pin',sataConn:'9',warranty:'8 Years',released:'2023'},
-    {id:5,brand:'Corsair',model:'COR-550U',powerOutput:'550W',psuType:'ATX',efficiency:'80+ Bronze',inputVoltage:'100–240V',frequency:'50–60Hz',cooling:'160mm Fan',modular:'Fully Modular',mainPower:'24-pin ATX',cpuPower:'1x 8-pin EPS',pcieConn:'2x 6+2-pin',sataConn:'6',warranty:'7 Years',released:'2020'},
-  ],
-  ssd: [
-    {id:1,brand:'Seagate',model:'Barracuda 7200',storageType:'HDD',interface:'SATA III',formFactor:'3.5 inch',capacity:'2TB',nand:'—',readSpeed:'220 MB/s',writeSpeed:'210 MB/s',readIOPS:'250',writeIOPS:'230',cache:'256MB',endurance:'—',power:'7.5W',encryption:'—',released:'2020'},
-    {id:2,brand:'Western Digital',model:'Blue SN570',storageType:'SSD',interface:'NVMe PCIe Gen3',formFactor:'M.2 2280',capacity:'500GB',nand:'TLC',readSpeed:'3500 MB/s',writeSpeed:'2300 MB/s',readIOPS:'460000',writeIOPS:'450000',cache:'512MB DRAM',endurance:'300 TBW',power:'4.2W',encryption:'—',released:'2022'},
-    {id:3,brand:'Samsung',model:'970 EVO Plus',storageType:'SSD',interface:'NVMe PCIe Gen3',formFactor:'M.2 2280',capacity:'1TB',nand:'TLC',readSpeed:'3500 MB/s',writeSpeed:'3300 MB/s',readIOPS:'620000',writeIOPS:'560000',cache:'1024MB DRAM',endurance:'600 TBW',power:'5.8W',encryption:'AES 256-bit',released:'2021'},
-    {id:4,brand:'Corsair',model:'MP600 PRO',storageType:'SSD',interface:'NVMe PCIe Gen4',formFactor:'M.2 2280',capacity:'2TB',nand:'TLC',readSpeed:'7000 MB/s',writeSpeed:'6550 MB/s',readIOPS:'1000000',writeIOPS:'950000',cache:'2048MB DRAM',endurance:'1400 TBW',power:'7.8W',encryption:'AES 256-bit',released:'2023'},
-    {id:5,brand:'Kingston',model:'NV2 2280',storageType:'SSD',interface:'NVMe PCIe Gen4',formFactor:'M.2 2280',capacity:'1TB',nand:'QLC',readSpeed:'3500 MB/s',writeSpeed:'2800 MB/s',readIOPS:'400000',writeIOPS:'380000',cache:'1024MB DRAM',endurance:'320 TBW',power:'5.0W',encryption:'TCG Opal',released:'2023'},
-  ],
-  hdd: [
-    {id:1,brand:'Seagate',model:'IronWolf',storageType:'HDD',interface:'SATA III',formFactor:'3.5 inch',capacity:'6TB',nand:'—',readSpeed:'250 MB/s',writeSpeed:'240 MB/s',readIOPS:'350',writeIOPS:'330',cache:'256MB',endurance:'—',power:'8.8W',encryption:'—',released:'2022'},
-    {id:2,brand:'Toshiba',model:'X300',storageType:'HDD',interface:'SATA III',formFactor:'3.5 inch',capacity:'4TB',nand:'—',readSpeed:'210 MB/s',writeSpeed:'200 MB/s',readIOPS:'280',writeIOPS:'260',cache:'128MB',endurance:'—',power:'8.2W',encryption:'SED',released:'2021'},
-    {id:3,brand:'Western Digital',model:'Purple Pro',storageType:'HDD',interface:'SATA III',formFactor:'3.5 inch',capacity:'8TB',nand:'—',readSpeed:'245 MB/s',writeSpeed:'240 MB/s',readIOPS:'320',writeIOPS:'300',cache:'512MB',endurance:'—',power:'9.5W',encryption:'SED',released:'2024'},
-    {id:4,brand:'Seagate',model:'Exos X18',storageType:'HDD',interface:'SAS',formFactor:'3.5 inch',capacity:'18TB',nand:'—',readSpeed:'280 MB/s',writeSpeed:'270 MB/s',readIOPS:'500',writeIOPS:'480',cache:'512MB',endurance:'—',power:'12.0W',encryption:'SED',released:'2025'},
-  ],
-  fan: [
-    {id:1,brand:'Corsair',model:'AF120 Elite',dimensions:'120x120x25mm',speed:'1850 RPM',airflow:'59.1 CFM',connector:'4-Pin PWM',voltage:'12V',released:'2022'},
-    {id:2,brand:'NZXT',model:'F120 RGB',dimensions:'120x120x26mm',speed:'1800 RPM',airflow:'50.1 CFM',connector:'4-Pin PWM',voltage:'12V',released:'2023'},
-    {id:3,brand:'Cooler Master',model:'SickleFlow 120',dimensions:'120x120x25mm',speed:'1800 RPM',airflow:'62 CFM',connector:'4-Pin PWM',voltage:'12V',released:'2021'},
-    {id:4,brand:'Noctua',model:'NF-A12x25 PWM',dimensions:'120x120x25mm',speed:'2000 RPM',airflow:'60.1 CFM',connector:'4-Pin PWM',voltage:'12V',released:'2020'},
-    {id:5,brand:'DeepCool',model:'RF120 FS',dimensions:'120x120x25mm',speed:'1500 RPM',airflow:'56.5 CFM',connector:'3-Pin',voltage:'12V',released:'2021'},
-    {id:6,brand:'be quiet!',model:'Pure Wings 2',dimensions:'120x120x25mm',speed:'1500 RPM',airflow:'51.4 CFM',connector:'3-Pin',voltage:'12V',released:'2019'},
-    {id:7,brand:'Arctic',model:'P12 PWM PST',dimensions:'120x120x25mm',speed:'1800 RPM',airflow:'56.3 CFM',connector:'4-Pin PWM',voltage:'12V',released:'2021'},
-    {id:8,brand:'MSI',model:'MEG Silent Gale P12',dimensions:'120x120x25mm',speed:'2000 RPM',airflow:'56.2 CFM',connector:'4-Pin PWM',voltage:'12V',released:'2023'},
-  ],
-  mobo: [
-    {id:1,brand:'ASUS',model:'ROG Crosshair X870E Extreme',formFactor:'E-ATX',chipset:'X870E',socket:'AM5',memType:'DDR5',dimms:'4',maxMem:'256GB',memSpeed:'4800–8600+ MHz',pciSlots:'2x PCIe 5.0 x16',m2Slots:'4-5x M.2 NVMe',usb:'USB4/USB 3.2 Gen2x2',tier:'Enthusiast',released:'2026-04-05'},
-    {id:2,brand:'ASUS',model:'ROG Strix X870E-E Gaming WiFi',formFactor:'ATX',chipset:'X870E',socket:'AM5',memType:'DDR5',dimms:'4',maxMem:'256GB',memSpeed:'4800–8600+ MHz',pciSlots:'1x PCIe 5.0 x16 + 1x PCIe 4.0',m2Slots:'4-5x M.2 NVMe',usb:'USB4/USB 3.2 Gen2',tier:'Performance',released:'2026-02-04'},
-    {id:3,brand:'MSI',model:'MEG X870E GODLIKE',formFactor:'E-ATX',chipset:'X870E',socket:'AM5',memType:'DDR5',dimms:'4',maxMem:'256GB',memSpeed:'4800–8600+ MHz',pciSlots:'2x PCIe 5.0 x16',m2Slots:'4-5x M.2 NVMe',usb:'USB4/USB 3.2 Gen2x2',tier:'Enthusiast',released:'2026-04-05'},
-    {id:4,brand:'MSI',model:'MAG X870E TOMAHAWK WIFI',formFactor:'ATX',chipset:'X870E',socket:'AM5',memType:'DDR5',dimms:'4',maxMem:'256GB',memSpeed:'4800–8600+ MHz',pciSlots:'1x PCIe 5.0 x16',m2Slots:'4-5x M.2 NVMe',usb:'USB 3.2 Gen2',tier:'Mainstream',released:'2026-02-04'},
-    {id:5,brand:'Gigabyte',model:'X870E AORUS XTREME',formFactor:'E-ATX',chipset:'X870E',socket:'AM5',memType:'DDR5',dimms:'4',maxMem:'256GB',memSpeed:'4800–8600+ MHz',pciSlots:'2x PCIe 5.0 x16',m2Slots:'4-5x M.2 NVMe',usb:'USB4/USB 3.2 Gen2x2',tier:'Enthusiast',released:'2026-04-05'},
-    {id:6,brand:'Gigabyte',model:'X870E AORUS ELITE AX',formFactor:'ATX',chipset:'X870E',socket:'AM5',memType:'DDR5',dimms:'4',maxMem:'256GB',memSpeed:'4800–8600+ MHz',pciSlots:'1x PCIe 5.0 x16',m2Slots:'4-5x M.2 NVMe',usb:'USB 3.2 Gen2',tier:'Mainstream',released:'2026-02-04'},
-  ],
-  ram: [
-    {id:1,brand:'ADATA',model:'Premier DDR2 800MT/s CL5 8GB (2x4GB)',memType:'DDR2',capacity:'8GB',config:'2x4GB',formFactor:'DIMM',speed:'800MT/s',cas:'CL5',voltage:'1.80V',pins:'240',ecc:'Non-ECC',buffered:'Unbuffered',xmp:'JEDEC',released:'2004–2010'},
-    {id:2,brand:'Corsair',model:'Vengeance DDR4 3200 32GB (2x16GB)',memType:'DDR4',capacity:'32GB',config:'2x16GB',formFactor:'DIMM',speed:'3200MT/s',cas:'CL16',voltage:'1.35V',pins:'288',ecc:'Non-ECC',buffered:'Unbuffered',xmp:'XMP 2.0',released:'2020'},
-    {id:3,brand:'G.Skill',model:'Trident Z5 DDR5 6000 32GB (2x16GB)',memType:'DDR5',capacity:'32GB',config:'2x16GB',formFactor:'DIMM',speed:'6000MT/s',cas:'CL36',voltage:'1.35V',pins:'288',ecc:'Non-ECC',buffered:'Unbuffered',xmp:'XMP 3.0',released:'2022'},
-    {id:4,brand:'Kingston',model:'Fury Beast DDR5 5200 16GB (1x16GB)',memType:'DDR5',capacity:'16GB',config:'1x16GB',formFactor:'DIMM',speed:'5200MT/s',cas:'CL40',voltage:'1.25V',pins:'288',ecc:'Non-ECC',buffered:'Unbuffered',xmp:'XMP 3.0',released:'2022'},
-    {id:5,brand:'Samsung',model:'DDR5 ECC RDIMM 64GB (2x32GB)',memType:'DDR5',capacity:'64GB',config:'2x32GB',formFactor:'RDIMM',speed:'4800MT/s',cas:'CL40',voltage:'1.10V',pins:'288',ecc:'ECC',buffered:'Registered',xmp:'JEDEC',released:'2023'},
-  ],
-};
+// ─── SCHEMA & CATEGORY DATA - LOADED FROM API ───────────────────────────────────
+let DB = {};
+let SCHEMAS = {};
+let CAT_INFO = {};
 
-const SCHEMAS = {
-  cpu:{
-    fields:['brand','model','family','cores','baseClock','turboClock','cache','igpu','tdp','memSupport','socket','released'],
-    labels:['Brand','Model','CPU Family','Cores (P/E)','Base Clock','Turbo Clock','Cache','Integrated GPU','TDP','Memory Support','Socket','Date Released'],
-    brandKey:'brand',modelKey:'model'
-  },
-  gpu:{
-    fields:['brand','model','memType','memCapacity','busWidth','coreClock','cudaCores','tdp','psu','formFactor','release'],
-    labels:['Brand','Model','Memory Type','Memory Capacity','Bus Width','Core Clock','CUDA/Shader Cores','TDP','PSU Req.','Form Factor','Release Year'],
-    brandKey:'brand',modelKey:'model'
-  },
-  psu:{
-    fields:['brand','model','powerOutput','psuType','efficiency','inputVoltage','frequency','cooling','modular','mainPower','cpuPower','pcieConn','sataConn','warranty','released'],
-    labels:['Brand','Model','Power Output','PSU Type','Efficiency','Input Voltage','Frequency','Cooling','Modular Type','Main Power','CPU Power','PCIe Connectors','SATA Connectors','Warranty','Released'],
-    brandKey:'brand',modelKey:'model'
-  },
-  ssd:{
-    fields:['brand','model','storageType','interface','formFactor','capacity','nand','readSpeed','writeSpeed','readIOPS','writeIOPS','cache','endurance','power','encryption','released'],
-    labels:['Brand','Model','Storage Type','Interface','Form Factor','Capacity','NAND Type','Read Speed','Write Speed','Read IOPS','Write IOPS','Cache','Endurance','Power','Encryption','Released'],
-    brandKey:'brand',modelKey:'model'
-  },
-  hdd:{
-    fields:['brand','model','storageType','interface','formFactor','capacity','readSpeed','writeSpeed','readIOPS','writeIOPS','cache','power','encryption','released'],
-    labels:['Brand','Model','Storage Type','Interface','Form Factor','Capacity','Read Speed','Write Speed','Read IOPS','Write IOPS','Cache','Power','Encryption','Released'],
-    brandKey:'brand',modelKey:'model'
-  },
-  fan:{
-    fields:['brand','model','dimensions','speed','airflow','connector','voltage','released'],
-    labels:['Brand','Model','Fan Dimensions','Fan Speed','Airflow (CFM)','Connector Type','Voltage','Released'],
-    brandKey:'brand',modelKey:'model'
-  },
-  mobo:{
-    fields:['brand','model','formFactor','chipset','socket','memType','dimms','maxMem','memSpeed','pciSlots','m2Slots','usb','tier','released'],
-    labels:['Brand','Model','Form Factor','Chipset','Socket','Memory Type','DIMM Slots','Max Memory','Memory Speed','PCIe Slots','M.2 Slots','USB Ports','Tier','Released'],
-    brandKey:'brand',modelKey:'model'
-  },
-  ram:{
-    fields:['brand','model','memType','capacity','config','formFactor','speed','cas','voltage','pins','ecc','buffered','xmp','released'],
-    labels:['Brand','Model','Memory Type','Capacity','Config','Form Factor','Speed','CAS Latency','Voltage','Pins','ECC Support','Buffered','XMP Support','Released'],
-    brandKey:'brand',modelKey:'model'
+async function loadSchemaData(){
+  try{
+    const [schemas, categories, allComponents] = await Promise.all([
+      fetchJson('/api/admin/schemas'),
+      fetchJson('/api/admin/categories'),
+      fetchJson('/api/admin/components?cache='+Date.now())
+    ]);
+    SCHEMAS = schemas;
+    CAT_INFO = categories;
+    DB = allComponents;
+    ensureDbShape();
+    touchSaved();
+  }catch(e){
+    console.error('Failed to load schema data:',e);
+    toast('Failed to load PostgreSQL data: '+e.message,'error');
+    ensureDbShape();
   }
-};
+}
 
-const CAT_INFO = {
-  cpu:{name:'Processor (CPU)',subtitle:'Manage CPU specifications and details',pill:'pill-cpu',icon:'cat-cpu'},
-  gpu:{name:'Graphics Card (GPU)',subtitle:'Manage GPU specifications and details',pill:'pill-gpu',icon:'cat-gpu'},
-  psu:{name:'Power Supply (PSU)',subtitle:'Manage PSU specifications and details',pill:'pill-psu',icon:'cat-psu'},
-  ssd:{name:'Storage (SSD)',subtitle:'Manage SSD specifications and details',pill:'pill-ssd',icon:'cat-ssd'},
-  hdd:{name:'Storage (HDD)',subtitle:'Manage HDD specifications and details',pill:'pill-hdd',icon:'cat-hdd'},
-  fan:{name:'Cooling Fans',subtitle:'Manage cooling fan specifications',pill:'pill-fan',icon:'cat-fan'},
-  mobo:{name:'Motherboard',subtitle:'Manage motherboard specifications',pill:'pill-mobo',icon:'cat-mobo'},
-  ram:{name:'Memory (RAM)',subtitle:'Manage RAM specifications and details',pill:'pill-ram',icon:'cat-ram'},
-};
+async function fetchJson(url, options={}){
+  const res = await fetch(url, {cache:'no-store', ...options});
+  const data = await res.json().catch(()=>({}));
+  if(!res.ok) throw new Error(data?.detail?.details || data?.detail?.error || data?.details || data?.error || res.statusText);
+  return data;
+}
+
+function ensureDbShape(){
+  Object.keys(SCHEMAS).forEach(k=>{
+    if(!Array.isArray(DB[k])) DB[k] = [];
+  });
+}
+
+function touchSaved(){
+  const el = document.getElementById('last-saved');
+  if(el) el.textContent = new Date().toLocaleTimeString();
+}
+
+async function apiSaveComponent(cat, id, data){
+  return fetchJson(
+    id===null ? `/api/admin/components/${cat}` : `/api/admin/components/${cat}/${id}`,
+    {
+      method: id===null ? 'POST' : 'PUT',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(data)
+    }
+  );
+}
+
+async function apiDeleteComponent(cat, id){
+  return fetchJson(`/api/admin/components/${cat}/${id}`, {method:'DELETE'});
+}
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
 let currentCat = 'cpu';
@@ -594,31 +536,26 @@ let editingRow = null;
 let sortField = null;
 let sortDir = 1;
 let selectedIds = new Set();
+let lastSelectedRowId = null;
 let filterBrand = '';
 let searchQuery = '';
 let modalEditId = null;
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
-window.onload = () => {
-  loadFromStorage();
+window.onload = async () => {
+  await loadSchemaData();
   updateCountBadges();
   updateTotalStat();
+  populateBrandFilter();
   renderTable();
 };
 
 function loadFromStorage(){
-  const saved = localStorage.getItem('assemblypc_admin_db');
-  if(saved){
-    try{
-      const parsed = JSON.parse(saved);
-      Object.keys(DB).forEach(k=>{ if(parsed[k]) DB[k]=parsed[k]; });
-    }catch(e){}
-  }
+  // PostgreSQL is the only data source for dashboard rows.
 }
 
 function saveToStorage(){
-  localStorage.setItem('assemblypc_admin_db', JSON.stringify(DB));
-  document.getElementById('last-saved').textContent = new Date().toLocaleTimeString();
+  touchSaved();
 }
 
 // ─── NAVIGATION ───────────────────────────────────────────────────────────────
@@ -627,6 +564,7 @@ function switchCategory(cat){
   document.getElementById('nav-'+cat).classList.add('active');
   currentCat = cat;
   selectedIds.clear();
+  lastSelectedRowId = null;
   sortField = null;
   sortDir = 1;
   filterBrand = '';
@@ -752,7 +690,7 @@ function renderTable(){
     body.innerHTML = data.map(row=>{
       const isSelected = selectedIds.has(row.id);
       return `<tr class="${isSelected?'selected':''}" id="row-${row.id}">
-        <td><input type="checkbox" ${isSelected?'checked':''} onchange="toggleRow(${row.id},this.checked)"/></td>
+        <td><input type="checkbox" ${isSelected?'checked':''} onclick="toggleRow(${row.id},this.checked,event)" title="Shift+Click to select a range"/></td>
         <td><span class="id-cell">${row.id}</span></td>
         ${schema.fields.map(f=>{
           const val = row[f]??'';
@@ -808,14 +746,24 @@ function startInlineEdit(td, rowId, field){
   td.querySelector('input').select();
 }
 
-function commitInline(inp){
+async function commitInline(inp){
   const id = parseInt(inp.dataset.id);
   const field = inp.dataset.field;
   const val = inp.value.trim();
   const row = DB[currentCat].find(r=>r.id===id);
-  if(row){ row[field]=val; saveToStorage(); }
+  if(!row) return renderTable();
+  const previous = row[field];
+  row[field]=val;
+  try{
+    const saved = await apiSaveComponent(currentCat, id, row);
+    Object.assign(row, saved);
+    saveToStorage();
+    toast('Cell updated in PostgreSQL','success');
+  }catch(err){
+    row[field]=previous;
+    toast('Update failed: '+err.message,'error');
+  }
   renderTable();
-  toast('Cell updated','success');
 }
 
 function inlineKey(e,inp){
@@ -830,12 +778,30 @@ function toggleAll(checked){
     if(checked) selectedIds.add(r.id);
     else selectedIds.delete(r.id);
   });
+  lastSelectedRowId = data.length ? data[data.length-1].id : null;
   renderTable();
 }
 
-function toggleRow(id, checked){
+function toggleRow(id, checked, event){
+  const displayData = getDisplayData();
+  const currentIndex = displayData.findIndex(r=>r.id===id);
+  const anchorIndex = displayData.findIndex(r=>r.id===lastSelectedRowId);
+
+  if(event?.shiftKey && anchorIndex !== -1 && currentIndex !== -1){
+    const start = Math.min(anchorIndex,currentIndex);
+    const end = Math.max(anchorIndex,currentIndex);
+    displayData.slice(start,end+1).forEach(r=>{
+      if(checked) selectedIds.add(r.id);
+      else selectedIds.delete(r.id);
+    });
+    lastSelectedRowId = id;
+    renderTable();
+    return;
+  }
+
   if(checked) selectedIds.add(id);
   else selectedIds.delete(id);
+  lastSelectedRowId = id;
   updateSelectionUI();
   const row = document.getElementById('row-'+id);
   if(row) row.classList.toggle('selected',checked);
@@ -844,32 +810,54 @@ function toggleRow(id, checked){
 function updateSelectionUI(){
   const info = document.getElementById('selection-info');
   const bulkBtn = document.getElementById('bulk-delete-btn');
+  const hint = document.getElementById('selection-shortcut');
   if(selectedIds.size>0){
     info.textContent = selectedIds.size+' selected';
     info.classList.add('visible');
     bulkBtn.style.display='inline-flex';
+    hint?.classList.add('visible');
   } else {
     info.classList.remove('visible');
     bulkBtn.style.display='none';
+    hint?.classList.remove('visible');
   }
 }
 
 function bulkDelete(){
   if(!selectedIds.size) return;
+  const count = selectedIds.size;
   showConfirm(
     'Delete Selected',
-    `Delete ${selectedIds.size} selected component(s)? This cannot be undone.`,
-    ()=>{
-      DB[currentCat] = DB[currentCat].filter(r=>!selectedIds.has(r.id));
-      selectedIds.clear();
-      saveToStorage();
-      renderTable();
-      toast(`${selectedIds.size||'Selected'} components deleted`,'error');
+    `Delete ${count} selected component(s)? This cannot be undone.`,
+    async ()=>{
+      const ids = [...selectedIds];
+      try{
+        await Promise.all(ids.map(id=>apiDeleteComponent(currentCat,id)));
+        DB[currentCat] = DB[currentCat].filter(r=>!ids.includes(r.id));
+        selectedIds.clear();
+        saveToStorage();
+        renderTable();
+        toast(`${count} component(s) deleted from PostgreSQL`,'error');
+      }catch(err){
+        toast('Bulk delete failed: '+err.message,'error');
+      }
     }
   );
 }
 
 // ─── ADD / EDIT MODAL ─────────────────────────────────────────────────────────
+document.addEventListener('keydown', e=>{
+  const tag = e.target?.tagName?.toLowerCase();
+  const isTyping = tag === 'input' || tag === 'textarea' || tag === 'select' || e.target?.isContentEditable;
+  const modalOpen = document.getElementById('modal-overlay')?.classList.contains('open');
+  const confirmOpen = document.getElementById('confirm-overlay')?.classList.contains('open');
+  if(isTyping || modalOpen || confirmOpen) return;
+  if((e.key === 'Delete' || e.key === 'Backspace') && selectedIds.size){
+    e.preventDefault();
+    bulkDelete();
+  }
+});
+
 function openAddModal(){
   modalEditId = null;
   document.getElementById('modal-title').textContent = 'Add Component';
@@ -903,7 +891,7 @@ function buildModalForm(row){
   document.getElementById('modal-form').innerHTML = html;
 }
 
-function saveModal(){
+async function saveModal(){
   const schema = SCHEMAS[currentCat];
   const data = {};
   for(const f of schema.fields){
@@ -913,18 +901,23 @@ function saveModal(){
   if(!data[schema.brandKey] && !data[schema.modelKey]){
     toast('Brand and Model are required','error'); return;
   }
-  if(modalEditId!==null){
-    const row = DB[currentCat].find(r=>r.id===modalEditId);
-    if(row){ Object.assign(row,data); }
-    toast('Component updated','success');
-  } else {
-    const maxId = DB[currentCat].reduce((m,r)=>Math.max(m,r.id),0);
-    DB[currentCat].push({id:maxId+1,...data});
-    toast('Component added','success');
+  try{
+    if(modalEditId!==null){
+      const saved = await apiSaveComponent(currentCat, modalEditId, data);
+      const idx = DB[currentCat].findIndex(r=>r.id===modalEditId);
+      if(idx>=0) DB[currentCat][idx]=saved;
+      toast('Component updated in PostgreSQL','success');
+    } else {
+      const saved = await apiSaveComponent(currentCat, null, data);
+      DB[currentCat].push(saved);
+      toast('Component added to PostgreSQL','success');
+    }
+    saveToStorage();
+    closeModalDirect();
+    renderTable();
+  }catch(err){
+    toast('Save failed: '+err.message,'error');
   }
-  saveToStorage();
-  closeModalDirect();
-  renderTable();
 }
 
 function closeModal(e){ if(e.target===document.getElementById('modal-overlay')) closeModalDirect(); }
@@ -935,12 +928,17 @@ let confirmCallback = null;
 function confirmDelete(id){
   const row = DB[currentCat].find(r=>r.id===id);
   const name = row ? `${row.brand||''} ${row.model||''}`.trim() : 'this item';
-  showConfirm('Delete Component',`Delete "${name}"? This action cannot be undone.`,()=>{
-    DB[currentCat] = DB[currentCat].filter(r=>r.id!==id);
-    selectedIds.delete(id);
-    saveToStorage();
-    renderTable();
-    toast('Component deleted','error');
+  showConfirm('Delete Component',`Delete "${name}"? This action cannot be undone.`,async ()=>{
+    try{
+      await apiDeleteComponent(currentCat,id);
+      DB[currentCat] = DB[currentCat].filter(r=>r.id!==id);
+      selectedIds.delete(id);
+      saveToStorage();
+      renderTable();
+      toast('Component deleted from PostgreSQL','error');
+    }catch(err){
+      toast('Delete failed: '+err.message,'error');
+    }
   });
 }
 
@@ -958,18 +956,18 @@ function importXLSX(e){
   const file = e.target.files[0];
   if(!file) return;
   const reader = new FileReader();
-  reader.onload = ev => {
+  reader.onload = async ev => {
     try{
       const wb = XLSX.read(ev.target.result, {type:'binary'});
       let imported = 0;
-      wb.SheetNames.forEach(sheetName => {
+      for(const sheetName of wb.SheetNames){
         const ws = wb.Sheets[sheetName];
         const rows = XLSX.utils.sheet_to_json(ws, {defval:''});
         const catKey = detectCatFromSheet(sheetName);
-        if(!catKey || !rows.length) return;
+        if(!catKey || !rows.length) continue;
         const schema = SCHEMAS[catKey];
-        const mapped = rows.map((r,i)=>{
-          const obj = {id: DB[catKey].length + i + 1};
+        const mapped = rows.map(r=>{
+          const obj = {};
           schema.fields.forEach(f=>{
             const hit = Object.keys(r).find(k=>k.toLowerCase().replace(/\s/g,'').includes(f.toLowerCase().replace(/\s/g,'')));
             obj[f] = hit ? String(r[hit]??'') : '';
@@ -979,16 +977,17 @@ function importXLSX(e){
           if(!obj.model) obj.model = r['Model']||r['MODEL']||r['model']||'';
           return obj;
         }).filter(o=>o.brand||o.model);
-        if(mapped.length){
-          DB[catKey].push(...mapped);
-          imported += mapped.length;
+        for(const item of mapped){
+          const saved = await apiSaveComponent(catKey, null, item);
+          DB[catKey].push(saved);
+          imported += 1;
         }
-      });
+      }
       saveToStorage();
       renderTable();
       updateCountBadges();
       updateTotalStat();
-      toast(`Imported ${imported} components from ${file.name}`,'success');
+      toast(`Imported ${imported} components into PostgreSQL from ${file.name}`,'success');
     }catch(err){
       toast('Import failed: '+err.message,'error');
     }

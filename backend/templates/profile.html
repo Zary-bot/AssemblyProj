@@ -981,7 +981,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
         Simulator
       </a>
-      <a href="/admin" class="nav-link">
+      <a href="/admin/login?back=/" class="nav-link">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
         Admin
       </a>
@@ -1116,268 +1116,14 @@
             </div>
             My Builds
           </div>
-          <a href="#" class="section-action">
+          <a href="/simulator" class="section-action">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             New Build
           </a>
         </div>
 
-        <div class="empty-state">
-          <div class="empty-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-          </div>
-          <h3>No builds yet</h3>
-          <p>Start your first PC build and share it with the community gallery.</p>
-          <a href="#" class="section-action" style="display:inline-flex;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Create Your First Build
-          </a>
-        </div>
-
-        <div class="builds-grid" style="display:none;">
-
-          <!-- Build 1 -->
-          <div class="build-card">
-            <div class="build-thumb thumb-green">
-              <div class="thumb-glow"></div>
-              <div class="build-badge badge-published">Published</div>
-              <div class="build-thumb-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="12" y1="11" x2="12" y2="16"/><line x1="9.5" y1="13.5" x2="14.5" y2="13.5"/></svg>
-              </div>
-            </div>
-            <div class="build-card-body">
-              <div class="build-card-title">Mid-Range Gaming Rig</div>
-              <div class="build-card-desc">Balanced build focused on 1080p high-refresh gaming with solid thermals.</div>
-              <div class="build-card-meta">
-                <div class="build-meta-item">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  2 hours ago
-                </div>
-                <div class="build-meta-item">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                  143 views
-                </div>
-              </div>
-            </div>
-            <div class="build-card-footer">
-              <div class="build-likes">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                24 likes
-              </div>
-              <button class="build-edit-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                Edit
-              </button>
-            </div>
-          </div>
-
-          <!-- Build 2 -->
-          <div class="build-card">
-            <div class="build-thumb thumb-blue">
-              <div class="thumb-glow"></div>
-              <div class="build-badge badge-published">Published</div>
-              <div class="build-thumb-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-              </div>
-            </div>
-            <div class="build-card-body">
-              <div class="build-card-title">Silent Home Server</div>
-              <div class="build-card-desc">Low-noise, always-on NAS build with ECC RAM for data integrity.</div>
-              <div class="build-card-meta">
-                <div class="build-meta-item">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  4 days ago
-                </div>
-                <div class="build-meta-item">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                  89 views
-                </div>
-              </div>
-            </div>
-            <div class="build-card-footer">
-              <div class="build-likes">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                17 likes
-              </div>
-              <button class="build-edit-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                Edit
-              </button>
-            </div>
-          </div>
-
-          <!-- Build 3 -->
-          <div class="build-card">
-            <div class="build-thumb thumb-purple">
-              <div class="thumb-glow"></div>
-              <div class="build-badge badge-published">Published</div>
-              <div class="build-thumb-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-              </div>
-            </div>
-            <div class="build-card-body">
-              <div class="build-card-title">4K Content Creation Workstation</div>
-              <div class="build-card-desc">High-core-count build for video editing and 3D rendering workflows.</div>
-              <div class="build-card-meta">
-                <div class="build-meta-item">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  1 week ago
-                </div>
-                <div class="build-meta-item">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                  201 views
-                </div>
-              </div>
-            </div>
-            <div class="build-card-footer">
-              <div class="build-likes">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                41 likes
-              </div>
-              <button class="build-edit-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                Edit
-              </button>
-            </div>
-          </div>
-
-          <!-- Build 4 -->
-          <div class="build-card">
-            <div class="build-thumb thumb-teal">
-              <div class="thumb-glow"></div>
-              <div class="build-badge badge-published">Published</div>
-              <div class="build-thumb-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-              </div>
-            </div>
-            <div class="build-card-body">
-              <div class="build-card-title">Compact Mini-ITX Build</div>
-              <div class="build-card-desc">Tiny but powerful small-form-factor desktop for dorm or desk use.</div>
-              <div class="build-card-meta">
-                <div class="build-meta-item">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  2 weeks ago
-                </div>
-                <div class="build-meta-item">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                  76 views
-                </div>
-              </div>
-            </div>
-            <div class="build-card-footer">
-              <div class="build-likes">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                9 likes
-              </div>
-              <button class="build-edit-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                Edit
-              </button>
-            </div>
-          </div>
-
-          <!-- Build 5 -->
-          <div class="build-card">
-            <div class="build-thumb thumb-red">
-              <div class="thumb-glow"></div>
-              <div class="build-badge badge-published">Published</div>
-              <div class="build-thumb-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-              </div>
-            </div>
-            <div class="build-card-body">
-              <div class="build-card-title">Budget 1080p Starter</div>
-              <div class="build-card-desc">Entry-level gaming PC under ₱25,000 — great for beginners.</div>
-              <div class="build-card-meta">
-                <div class="build-meta-item">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  3 weeks ago
-                </div>
-                <div class="build-meta-item">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                  318 views
-                </div>
-              </div>
-            </div>
-            <div class="build-card-footer">
-              <div class="build-likes">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                63 likes
-              </div>
-              <button class="build-edit-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                Edit
-              </button>
-            </div>
-          </div>
-
-          <!-- Build 6 – Draft -->
-          <div class="build-card">
-            <div class="build-thumb thumb-amber">
-              <div class="thumb-glow"></div>
-              <div class="build-badge badge-draft">Draft</div>
-              <div class="build-thumb-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-              </div>
-            </div>
-            <div class="build-card-body">
-              <div class="build-card-title">Threadripper Workstation WIP</div>
-              <div class="build-card-desc">High-end HEDT platform — still researching storage and cooling solutions.</div>
-              <div class="build-card-meta">
-                <div class="build-meta-item">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  Draft · last edited yesterday
-                </div>
-              </div>
-            </div>
-            <div class="build-card-footer">
-              <div class="build-likes" style="color:#a0aec0;">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                Not published
-              </div>
-              <button class="build-edit-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                Continue
-              </button>
-            </div>
-          </div>
-
-          <!-- Build 7 – Published -->
-          <div class="build-card">
-            <div class="build-thumb thumb-green">
-              <div class="thumb-glow"></div>
-              <div class="build-badge badge-published">Published</div>
-              <div class="build-thumb-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="2" x2="9" y2="4"/><line x1="15" y1="2" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="22"/><line x1="15" y1="20" x2="15" y2="22"/><line x1="20" y1="9" x2="22" y2="9"/><line x1="20" y1="14" x2="22" y2="14"/><line x1="2" y1="9" x2="4" y2="9"/><line x1="2" y1="14" x2="4" y2="14"/></svg>
-              </div>
-            </div>
-            <div class="build-card-body">
-              <div class="build-card-title">Ryzen 5 Student Build</div>
-              <div class="build-card-desc">Perfect school PC for coding, office tasks, and light gaming.</div>
-              <div class="build-card-meta">
-                <div class="build-meta-item">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  1 month ago
-                </div>
-                <div class="build-meta-item">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                  512 views
-                </div>
-              </div>
-            </div>
-            <div class="build-card-footer">
-              <div class="build-likes">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                98 likes
-              </div>
-              <button class="build-edit-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                Edit
-              </button>
-            </div>
-          </div>
-
-        </div>
+        <!-- Builds Grid (will be populated by JavaScript) -->
+        <div class="builds-grid"></div>
       </div>
 
       <!-- FAVORITES TAB -->
@@ -1629,6 +1375,118 @@
   <button class="help-btn" title="Help"><span>?</span></button>
 
   <script>
+    // ═══════════════════════════════════════════════
+    // PROFILE DATA FETCHING
+    // ═══════════════════════════════════════════════
+    
+    let profileData = null;
+
+    async function loadProfileData() {
+      try {
+        const response = await fetch('/api/profile?cache=' + Date.now());
+        if (!response.ok) throw new Error('Failed to fetch profile');
+        
+        profileData = await response.json();
+        console.log('✓ Loaded profile data:', profileData);
+        
+        renderProfileBanner();
+        renderBuildsTab();
+        
+      } catch (error) {
+        console.error('✗ Error loading profile:', error);
+      }
+    }
+
+    function renderProfileBanner() {
+      if (!profileData) return;
+      
+      const user = profileData.user || {};
+      const stats = profileData.stats || {};
+      
+      // Update user name
+      const nameEl = document.querySelector('.profile-name');
+      if (nameEl) {
+        nameEl.textContent = user.name || 'Student';
+      }
+      
+      // Update avatar
+      const avatarEl = document.querySelector('.avatar');
+      if (avatarEl) {
+        avatarEl.textContent = user.avatar || '👤';
+      }
+      
+      // Update stats
+      const statItems = document.querySelectorAll('.stat-item');
+      if (statItems.length >= 3) {
+        statItems[0].querySelector('.stat-number').innerHTML = stats.buildsPublished || '0';
+        statItems[1].querySelector('.stat-number').innerHTML = stats.favoritesSaved || '0';
+        statItems[2].querySelector('.stat-number').innerHTML = stats.badgesEarned || '0';
+      }
+    }
+
+    function renderBuildsTab() {
+      if (!profileData || !profileData.builds) return;
+      
+      const builds = profileData.builds;
+      const grid = document.querySelector('.builds-grid');
+      
+      if (!grid) return;
+      
+      // Clear existing placeholder content
+      grid.innerHTML = '';
+      
+      if (builds.length === 0) {
+        grid.parentElement.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            </div>
+            <h3>No builds yet</h3>
+            <p>Start building your first PC. <a href="/simulator" style="color: var(--green-dark); font-weight: 600;">Launch Simulator</a></p>
+          </div>
+        `;
+        return;
+      }
+      
+      // Render each build
+      builds.forEach((build, idx) => {
+        const colors = ['thumb-blue', 'thumb-green', 'thumb-purple', 'thumb-red', 'thumb-teal', 'thumb-amber'];
+        const colorClass = colors[idx % colors.length];
+        
+        const buildCard = document.createElement('div');
+        buildCard.className = 'build-card';
+        buildCard.innerHTML = `
+          <div class="build-thumb ${colorClass}">
+            <div class="thumb-glow"></div>
+            <div class="build-thumb-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            </div>
+            <div class="build-badge badge-published">Published</div>
+          </div>
+          <div class="build-card-body">
+            <div class="build-card-title">${build.name || 'Untitled Build'}</div>
+            <div class="build-card-desc">Budget: $${parseFloat(build.budget || 0).toFixed(2)}</div>
+            <div class="build-card-meta">
+              <div class="build-meta-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                ${new Date(build.created_at).toLocaleDateString()}
+              </div>
+            </div>
+          </div>
+          <div class="build-card-footer">
+            <div class="build-likes">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              0
+            </div>
+            <button class="build-edit-btn" onclick="window.location='/simulator#${build.id}'" title="View Build">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+          </div>
+        `;
+        grid.appendChild(buildCard);
+      });
+    }
+
     function switchTab(name, btn) {
       // deactivate all tabs
       document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
@@ -1640,6 +1498,7 @@
 
     // Animate skill bars on load
     window.addEventListener('load', () => {
+      loadProfileData();
       document.querySelectorAll('.skill-bar').forEach(bar => {
         const target = bar.style.width;
         bar.style.width = '0';

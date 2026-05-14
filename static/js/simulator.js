@@ -9,13 +9,17 @@ const userName = sessionStorage.getItem('userName') || 'Student';
   const badge = document.getElementById('modeBadge');
   const scenarioBtn = document.getElementById('btnScenario');
   if(userRole === 'teacher' || userRole === 'instructor'){
-    badge.className = 'mode-badge mode-instructor';
-    badge.textContent = 'Instructor';
-    scenarioBtn.style.display = 'flex';
+    if(badge) {
+      badge.className = 'mode-badge mode-instructor';
+      badge.textContent = 'Instructor';
+    }
+    if(scenarioBtn) scenarioBtn.style.display = 'flex';
   } else {
-    badge.className = 'mode-badge mode-student';
-    badge.textContent = 'Student';
-    scenarioBtn.style.display = 'none';
+    if(badge) {
+      badge.className = 'mode-badge mode-student';
+      badge.textContent = 'Student';
+    }
+    if(scenarioBtn) scenarioBtn.style.display = 'none';
   }
 })();
 
@@ -171,6 +175,32 @@ let draggingComp = null;
 let draggingCable = null;
 let currentView = 'front';
 
+const DEFAULT_OBJECTIVES = [
+  {section:'Requisite Learning', text:'Choose a CPU and motherboard with matching sockets', detail:'Socket mismatch blocks a proper boot.', check:()=>!!(build.cpu && build.mb && build.cpu.socket === build.mb.socket)},
+  {section:'Requisite Learning', text:'Use RAM that matches the motherboard memory type', detail:'DDR4 and DDR5 are not interchangeable.', check:()=>!!(build.ram && build.mb && (!build.ram.type || !build.mb.ram_type || build.ram.type === build.mb.ram_type))},
+  {section:'Requisite Learning', text:'Select a PSU with enough wattage for the CPU and GPU', detail:'Leave power headroom before powering on.', check:()=>!!(build.psu && build.psu.wattage >= estimateRequiredWattage())},
+  {section:'Build Tasks', text:'Install the motherboard in the case area', detail:'Start with the board as the base for all other parts.', check:()=>!!build.mb},
+  {section:'Build Tasks', text:'Install the CPU into the matching socket', detail:'Align the CPU before locking the socket.', check:()=>!!build.cpu && !!build.mb && build.cpu.socket === build.mb.socket},
+  {section:'Build Tasks', text:'Mount the CPU cooler after installing the CPU', detail:'The cooler prevents overheating.', check:()=>!!build.cpu && !!build.cooler},
+  {section:'Build Tasks', text:'Install compatible RAM', detail:'Memory must match the board type.', check:()=>!!build.ram && !!build.mb && (!build.ram.type || !build.mb.ram_type || build.ram.type === build.mb.ram_type)},
+  {section:'Build Tasks', text:'Install the graphics card', detail:'Place the GPU in the GPU slot.', check:()=>!!build.gpu},
+  {section:'Build Tasks', text:'Install a storage drive', detail:'Use SSD or HDD storage for the system.', check:()=>!!build.storage},
+  {section:'Build Tasks', text:'Install the power supply', detail:'The PSU powers the full build.', check:()=>!!build.psu},
+  {section:'Build Tasks', text:'Connect all required power/front-panel cables', detail:'Required cables must be connected before power on.', check:()=>requiredCablesConnected()},
+  {section:'Build Tasks', text:'Power on and pass the boot compatibility check', detail:'The system should start without socket, memory, or power errors.', check:()=>!!isPowered && checkCompatForBoot().ok},
+];
+
+function estimateRequiredWattage() {
+  const gpuWatt = Number(build.gpu?.tdp || build.gpu?.tdp_watts || 0);
+  const cpuWatt = Number(build.cpu?.tdp || build.cpu?.tdp_watts || 0);
+  return gpuWatt + cpuWatt + 100;
+}
+
+function requiredCablesConnected() {
+  const required = CABLE_ZONES.filter(z => z.required);
+  return required.length > 0 && required.every(z => (!z.zoneFor || build[z.zoneFor]) && connectedCables[z.id]);
+}
+
 // ═══════════════════════════════════════════════
 // FLASK API INTEGRATION - POSTGRESQL COMPONENT LOADER
 // ═══════════════════════════════════════════════
@@ -179,13 +209,13 @@ function normalizeDbCategory(value) {
   const c = String(value || '').toLowerCase().trim();
 
   if (c === 'cpu' || c === 'cpus') return 'cpu';
-  if (c === 'motherboard' || c === 'motherboards' || c === 'mb') return 'mb';
+  if (c === 'motherboard' || c === 'motherboards' || c === 'mb' || c === 'mobo') return 'mb';
   if (c === 'ram' || c === 'rams' || c === 'memory') return 'ram';
   if (c === 'gpu' || c === 'gpus') return 'gpu';
   if (c === 'storage' || c === 'ssd' || c === 'hdd') return 'storage';
   if (c === 'psu' || c === 'psus') return 'psu';
   if (c === 'case' || c === 'cases' || c === 'pc_case' || c === 'pc_cases') return 'case';
-  if (c === 'cooler' || c === 'coolers') return 'cooler';
+  if (c === 'cooler' || c === 'coolers' || c === 'fan' || c === 'fans' || c === 'cooling') return 'cooler';
 
   return c;
 }
@@ -208,6 +238,7 @@ function getDbId(item) {
 function getItemName(item) {
   return (
     item.name ||
+    item.model ||
     item.cpu_name ||
     item.motherboard_name ||
     item.ram_name ||
@@ -562,6 +593,7 @@ function switchSTab(tab, el) {
     const searchInput = document.getElementById('compSearch');
     if (searchInput) searchInput.value = '';
     updateClearSearchButton();
+    if(currentView !== 'front') switchView('front');
   } else if(tab === 'cable') {
     compPanel.style.display = 'none';
     cablePanel.style.display = 'flex';
@@ -1410,11 +1442,13 @@ function switchView(view) {
     stComp.classList.remove('active');
     const compPanel = document.getElementById('spanel-comp');
     const cablePanel = document.getElementById('spanel-cable');
+    const buildsPanel = document.getElementById('spanel-builds');
     compPanel.style.display = 'none';
     cablePanel.style.display = 'flex';
     cablePanel.style.flexDirection = 'column';
     cablePanel.style.flex = '1';
     cablePanel.style.overflow = 'hidden';
+    if(buildsPanel) buildsPanel.style.display = 'none';
     renderCableList();
   } else if(view === 'front') {
     // Sync sidebar to components tab
@@ -1424,11 +1458,13 @@ function switchView(view) {
     stCable.classList.remove('active');
     const compPanel = document.getElementById('spanel-comp');
     const cablePanel = document.getElementById('spanel-cable');
+    const buildsPanel = document.getElementById('spanel-builds');
     cablePanel.style.display = 'none';
     compPanel.style.display = 'flex';
     compPanel.style.flexDirection = 'column';
     compPanel.style.flex = '1';
     compPanel.style.overflow = 'hidden';
+    if(buildsPanel) buildsPanel.style.display = 'none';
   }
   if(view==='monitor') updateMonitorDisplay();
 }
@@ -1470,6 +1506,7 @@ function disconnectCable(zoneId) {
   renderCableZones();
   renderCableList();
   updateRightPanel();
+  checkObjectives();
   showToast('Cable disconnected','warn');
 }
 
@@ -1544,17 +1581,29 @@ function renderCompat() {
     else issues.push({type:'err',msg:`CPU socket (${build.cpu.socket}) ≠ MB socket (${build.mb.socket})`});
   }
   if(build.ram && build.mb) {
-    const sub = build.mb.sub||'';
-    const needsDDR5 = /Z790|B760|Z690|B660|B650|X670/.test(sub);
-    if(needsDDR5 && build.ram.type==='DDR4') issues.push({type:'warn',msg:'Motherboard prefers DDR5 — DDR4 RAM may not fit'});
-    else if(build.ram.type) ok.push(`RAM type (${build.ram.type}) compatible`);
+    const ramType = build.ram.ram_type || build.ram.type || '';
+    const boardType = build.mb.ram_type || '';
+    if(ramType && boardType && ramType !== boardType) issues.push({type:'err',msg:`RAM type (${ramType}) is not compatible with motherboard (${boardType})`});
+    else if(ramType) ok.push(`RAM type (${ramType}) compatible`);
+    if(build.ram.capacity_gb && build.mb.max_ram_gb && build.ram.capacity_gb > build.mb.max_ram_gb) {
+      issues.push({type:'err',msg:`RAM capacity (${build.ram.capacity_gb}GB) exceeds motherboard max (${build.mb.max_ram_gb}GB)`});
+    }
   }
-  const watt = build.gpu && build.gpu.tdp ? build.gpu.tdp : 0;
-  const cpuWatt = build.cpu && build.cpu.tdp ? build.cpu.tdp : 0;
-  const totalTdp = watt + cpuWatt + 100;
+  const totalTdp = estimateRequiredWattage();
   if(build.psu && totalTdp>0) {
-    if(build.psu.wattage >= totalTdp) ok.push(`PSU (${build.psu.wattage}W) sufficient for ~${totalTdp}W load`);
-    else issues.push({type:'warn',msg:`PSU (${build.psu.wattage}W) may be insufficient for ${totalTdp}W`});
+    const gpuRecommended = Number(build.gpu?.recommended_psu_watts || 0);
+    const requiredWattage = Math.max(totalTdp, gpuRecommended);
+    if(build.psu.wattage >= requiredWattage) ok.push(`PSU (${build.psu.wattage}W) sufficient for ~${requiredWattage}W load`);
+    else issues.push({type:'warn',msg:`PSU (${build.psu.wattage}W) may be insufficient for ${requiredWattage}W`});
+  }
+  if(build.gpu && build.mb) {
+    if(Number(build.mb.pcie_x16_slots || 0) < 1) issues.push({type:'err',msg:'Motherboard has no PCIe x16 slot for the GPU'});
+    else ok.push('Motherboard has a PCIe x16 GPU slot');
+  }
+  if(build.storage && build.mb) {
+    const storageInterface = String(build.storage.interface || '').toLowerCase();
+    if(storageInterface.includes('nvme') && Number(build.mb.m2_slots || 0) < 1) issues.push({type:'err',msg:'NVMe storage requires a motherboard M.2 slot'});
+    else if(build.storage.interface) ok.push(`Storage interface (${build.storage.interface}) compatible`);
   }
   if(build.cpu && build.cooler) ok.push('CPU cooler is installed');
   if(build.mb && !build.cpu) issues.push({type:'warn',msg:'Motherboard installed but no CPU'});
@@ -1666,12 +1715,14 @@ function togglePower() {
     isPowered = true;
     updatePowerUI();
     renderInstallGuide();
+    checkObjectives();
     bootPC();
   } else {
     isPowered = false;
     pcState = 'off';
     updatePowerUI();
     renderInstallGuide();
+    checkObjectives();
     if(currentView==='monitor') updateMonitorDisplay();
     showToast('PC powered off','warn');
   }
@@ -1715,9 +1766,14 @@ function bootPC() {
 function checkCompatForBoot() {
   if(build.cpu&&build.mb&&build.cpu.socket!==build.mb.socket) return {ok:false,msg:`CPU socket mismatch: ${build.cpu.socket} vs ${build.mb.socket}`};
   if(build.ram&&build.mb){
-    const sub=build.mb.sub||'';
-    if(/Z790|B760|Z690|B660|B650|X670/.test(sub)&&build.ram.type==='DDR4') return {ok:false,msg:'DDR4 RAM not compatible with DDR5 motherboard'};
+    const ramType = build.ram.ram_type || build.ram.type || '';
+    const boardType = build.mb.ram_type || '';
+    if(ramType && boardType && ramType !== boardType) return {ok:false,msg:`RAM type mismatch: ${ramType} vs ${boardType}`};
+    if(build.ram.capacity_gb && build.mb.max_ram_gb && build.ram.capacity_gb > build.mb.max_ram_gb) return {ok:false,msg:`RAM capacity ${build.ram.capacity_gb}GB exceeds motherboard max ${build.mb.max_ram_gb}GB`};
   }
+  if(build.gpu&&build.mb&&Number(build.mb.pcie_x16_slots || 0) < 1) return {ok:false,msg:'Motherboard has no PCIe x16 slot for the GPU'};
+  if(build.gpu&&build.psu&&Number(build.psu.wattage || 0) < Number(build.gpu.recommended_psu_watts || 0)) return {ok:false,msg:`PSU wattage too low: ${build.psu.wattage}W vs ${build.gpu.recommended_psu_watts}W recommended`};
+  if(build.storage&&build.mb&&String(build.storage.interface || '').toLowerCase().includes('nvme')&&Number(build.mb.m2_slots || 0) < 1) return {ok:false,msg:'NVMe storage requires a motherboard M.2 slot'};
   return {ok:true};
 }
 
@@ -2464,28 +2520,42 @@ function fixProblem(id) {
 // OBJECTIVES
 // ═══════════════════════════════════════════════
 function checkObjectives() {
-  objectives.forEach(o=>{
-    if(o.trigger && build[o.trigger]) o.done=true;
-    if(o.trigger==='all_cables') {
-      const req=CABLE_ZONES.filter(z=>z.required);
-      if(req.every(z=>connectedCables[z.id])) o.done=true;
-    }
-  });
+  objectives.forEach(o=>{ o.done = evaluateObjective(o); });
   if(activeRTab==='tasks') renderObjectives();
+}
+
+function evaluateObjective(o) {
+  if(typeof o.check === 'function') return !!o.check();
+  if(o.trigger==='all_cables') return requiredCablesConnected();
+  if(o.trigger) return !!build[o.trigger];
+  return !!o.done;
+}
+
+function getRenderedObjectives() {
+  return objectives.length ? objectives : DEFAULT_OBJECTIVES;
 }
 
 function renderObjectives() {
   const el = document.getElementById('objectivesList');
-  if(objectives.length===0) { el.innerHTML='<div style="font-size:11px;color:var(--faint);">No objectives set. Instructor must set a scenario.</div>'; return; }
-  el.innerHTML = objectives.map(o=>`<div class="obj-item">
-    <div class="obj-check ${o.done?'done':''}">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M5 12l5 5L19 7"/></svg>
-    </div>
-    <div><div class="obj-text ${o.done?'done-text':''}">${o.text}</div></div>
-  </div>`).join('');
+  const list = getRenderedObjectives().map(o=>({...o, done:evaluateObjective(o)}));
+  let lastSection = '';
+  el.innerHTML = list.map(o=>{
+    const section = o.section && o.section !== lastSection ? `<div class="obj-section-title">${o.section}</div>` : '';
+    if(o.section) lastSection = o.section;
+    return `${section}<div class="obj-item ${o.done?'done':'todo'}">
+      <div class="obj-check ${o.done?'done':''}">
+        <span class="obj-x">!</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M5 12l5 5L19 7"/></svg>
+      </div>
+      <div>
+        <div class="obj-text">${o.text}</div>
+        ${o.detail?`<div class="obj-sub">${o.detail}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
 
-  const done=objectives.filter(o=>o.done).length;
-  const total=objectives.length;
+  const done=list.filter(o=>o.done).length;
+  const total=list.length;
   const pct=total>0?Math.round((done/total)*100):0;
   document.getElementById('gradePreview').innerHTML=`<div class="grade-box">
     <div class="grade-pct" style="color:${pct>=90?'#3ecf5e':pct>=75?'#f59e0b':'#ef4444'}">${pct}%</div>
@@ -2515,6 +2585,7 @@ function tickTimer() {
 function resetTimer() { clearInterval(timerInterval); timerRunning=false; timerSeconds=0; updateTimerDisplay(); document.getElementById('timerIcon').innerHTML='<polygon points="5 3 19 12 5 21 5 3" fill="currentColor"/>'; }
 function updateTimerDisplay() {
   const el=document.getElementById('timerDisplay');
+  if(!el) return;
   const m=Math.floor(timerSeconds/60),s=timerSeconds%60;
   el.textContent=(timerTotal>0?`${String(Math.floor((timerTotal-timerSeconds)/60)).padStart(2,'0')}:${String((timerTotal-timerSeconds)%60).padStart(2,'0')}`:
     `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`);
@@ -2558,15 +2629,7 @@ function applyScenario() {
   scenario={name,tier:document.getElementById('sc-tier').value,type:document.getElementById('sc-type').value,desc:document.getElementById('sc-desc').value.trim()};
   objectives=[...pendingObjs];
   if(objectives.length===0) {
-    objectives=[
-      {text:'Install CPU into motherboard socket',done:false,trigger:'cpu'},
-      {text:'Mount CPU cooler',done:false,trigger:'cooler'},
-      {text:'Install RAM',done:false,trigger:'ram'},
-      {text:'Mount GPU in PCIe slot',done:false,trigger:'gpu'},
-      {text:'Connect Storage drive',done:false,trigger:'storage'},
-      {text:'Install PSU',done:false,trigger:'psu'},
-      {text:'Connect all required cables',done:false,trigger:'all_cables'},
-    ];
+    objectives=[...DEFAULT_OBJECTIVES];
   }
   if(timeMin>0) { timerTotal=timeMin*60; timerSeconds=0; updateTimerDisplay(); }
   document.getElementById('scenarioLabel').textContent=name;
@@ -2583,8 +2646,9 @@ function applyScenario() {
 // ═══════════════════════════════════════════════
 function openSubmitModal() {
   const filled=SLOT_TYPES.filter(t=>build[t]).length;
-  const total=objectives.length;
-  const done=objectives.filter(o=>o.done).length;
+  const renderedObjectives = getRenderedObjectives().map(o=>({...o, done:evaluateObjective(o)}));
+  const total=renderedObjectives.length;
+  const done=renderedObjectives.filter(o=>o.done).length;
   const grade=total>0?Math.round(75+(25*(done/total))):Math.round(75+(25*(filled/SLOT_TYPES.length)));
   const gradeColor=grade>=90?'#3ecf5e':grade>=80?'#f59e0b':'#ef4444';
 
@@ -2597,7 +2661,7 @@ function openSubmitModal() {
       <div class="grade-breakdown">${total>0?`${done}/${total} objectives`:`${filled}/${SLOT_TYPES.length} components`}</div>
     </div>
     <div style="max-height:200px;overflow-y:auto;">
-      ${(total>0?objectives:SLOT_TYPES.map(t=>({text:SLOT_LABELS[t]+': '+(build[t]?build[t].name:'Not installed'),done:!!build[t]}))).map(o=>`
+      ${renderedObjectives.map(o=>`
         <div class="result-task-row ${o.done?'done-r':'skip-r'}"><span>${o.done?'✓':'✗'} ${o.text}</span></div>`).join('')}
     </div>
     <div style="display:flex;gap:8px;margin-top:16px;">
@@ -2693,6 +2757,7 @@ async function initSimulator() {
   renderBuildRows();
   renderCompat();
   renderCableStatus();
+  renderObjectives();
   updateTimerDisplay();
   renderTroubleList();
 

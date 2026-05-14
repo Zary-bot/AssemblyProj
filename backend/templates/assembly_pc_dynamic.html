@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Assembly PC — Full Simulator</title>
+<title>Assembly PC � Full Simulator</title>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
@@ -20,7 +20,7 @@
 html{scroll-behavior:smooth;}
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;display:flex;flex-direction:column;}
 
-/* ── TOP BAR ── */
+/* -- TOP BAR -- */
 .topbar{height:var(--header);flex-shrink:0;background:var(--navy);display:flex;align-items:center;justify-content:space-between;padding:0 16px;gap:10px;border-bottom:1px solid rgba(255,255,255,.08);position:relative;z-index:200;}
 .topbar-left{display:flex;align-items:center;gap:10px;}
 .back-btn{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:#94a3b8;cursor:pointer;transition:all .15s;text-decoration:none;}
@@ -59,10 +59,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
 .btn-blue{background:#3b82f6;color:#fff;}.btn-blue:hover{background:#2563eb;}
 .btn-purple{background:#8b5cf6;color:#fff;}.btn-purple:hover{background:#7c3aed;}
 
-/* ── MAIN LAYOUT ── */
+/* -- MAIN LAYOUT -- */
 .main{display:flex;flex:1;overflow:hidden;}
 
-/* ── LEFT SIDEBAR ── */
+/* -- LEFT SIDEBAR -- */
 .sidebar{width:var(--sidebar);flex-shrink:0;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
 .sidebar-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;}
 .stab{flex:1;padding:10px 6px;font-size:11px;font-weight:600;border:none;background:transparent;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;}
@@ -90,8 +90,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
 .comp-info{flex:1;min-width:0;}
 .comp-name{font-size:11px;font-weight:600;color:var(--slate);line-height:1.2;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .comp-sub{font-size:9px;color:var(--faint);}
-.comp-price{font-size:10px;font-weight:700;color:var(--green-dk);flex-shrink:0;}
-
 /* Cable items */
 .cable-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:#fff;margin-bottom:5px;cursor:grab;transition:all .15s;user-select:none;}
 .cable-item:hover{border-color:var(--cyan);box-shadow:0 2px 10px rgba(6,182,212,.15);transform:translateX(2px);}
@@ -111,7 +109,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
 .cat-cooler{background:#cffafe;color:#0e7490;}
 .cat-cable{background:#fef9c3;color:#854d0e;}
 
-/* ── CANVAS AREA ── */
+/* -- CANVAS AREA -- */
 .canvas-area{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg);}
 .canvas-toolbar{display:flex;align-items:center;gap:8px;padding:8px 14px;background:#fff;border-bottom:1px solid var(--border);flex-shrink:0;}
 .canvas-toolbar-label{font-size:12px;font-weight:600;color:var(--slate);flex:1;}
@@ -214,7 +212,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
 .bsod-msg{font-size:11px;color:rgba(255,255,255,.8);line-height:1.6;}
 .bsod-code{font-size:10px;color:rgba(255,255,255,.6);margin-top:8px;}
 
-/* ── RIGHT PANEL ── */
+/* -- RIGHT PANEL -- */
 .right-panel{width:var(--right);flex-shrink:0;background:var(--card);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
 .rpanel-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;}
 .rpanel-tabs::-webkit-scrollbar{height:2px;}
@@ -338,7 +336,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
 </head>
 <body>
 
-<!-- ══════════════ TOP BAR ══════════════ -->
+<!-- -------------- TOP BAR -------------- -->
 <div class="topbar">
   <div class="topbar-left">
     <a href="/" class="back-btn">
@@ -371,10 +369,19 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
   </div>
 
   <div class="topbar-right">
+    <a href="/admin" class="btn-sm btn-ghost">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M2 17h20"/><path d="M6 21h12"/></svg>
+      Admin
+    </a>
+    <a href="/profile" class="btn-sm btn-ghost">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Profile
+    </a>
+
     <!-- Power controls -->
     <div class="power-controls">
       <span class="power-label" id="powerLabel">OFF</span>
-      <button class="power-btn off" id="powerBtn" onclick="togglePower()" title="Power On/Off">⏻</button>
+      <button class="power-btn off" id="powerBtn" onclick="togglePower()" title="Power On/Off">?</button>
     </div>
 
     <div class="timer-wrap">
@@ -403,10 +410,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
   </div>
 </div>
 
-<!-- ══════════════ MAIN ══════════════ -->
+<!-- -------------- MAIN -------------- -->
 <div class="main">
 
-  <!-- ── LEFT SIDEBAR (split: components + cables) ── -->
+  <!-- -- LEFT SIDEBAR (split: components + cables) -- -->
   <div class="sidebar">
     <div class="sidebar-tabs">
       <button class="stab active" id="stab-comp" onclick="switchSTab('comp',this)">🔧 Components</button>
@@ -418,6 +425,13 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
     <div id="spanel-comp" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
       <div class="sidebar-header">
         <div class="sidebar-title">Component Library</div>
+        <div style="display:flex;gap:6px;margin-bottom:8px;">
+          <div style="position:relative;flex:1;">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);width:13px;height:13px;color:var(--faint);"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input type="text" id="compSearch" placeholder="Search components..." oninput="onCompSearchChange(this.value)" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 10px 6px 30px;font-size:11px;color:var(--text);font-family:'Inter',sans-serif;outline:none;transition:all .15s;"/>
+          </div>
+          <button id="clearCompSearch" onclick="clearComponentSearch()" style="display:none;padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:11px;font-weight:600;transition:all .15s;" title="Clear search">✕</button>
+        </div>
         <div class="cat-tabs" id="catTabs">
           <button class="cat-tab active" onclick="filterCat('all',this)">All</button>
           <button class="cat-tab" onclick="filterCat('cpu',this)">CPU</button>
@@ -446,7 +460,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
     <div id="spanel-builds" style="display:none;flex-direction:column;overflow:hidden;flex:1;">
       <div class="sidebar-header">
         <div class="sidebar-title">Saved Builds</div>
-        <button class="btn-sm btn-green" onclick="refreshBuildsList()" style="width:100%;margin-top:8px;">🔄 Refresh Builds</button>
+        <button class="btn-sm btn-green" onclick="refreshBuildsList()" style="width:100%;margin-top:8px;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+          Refresh Builds
+        </button>
       </div>
       <div class="sidebar-list" id="buildsList" style="gap:8px;">
         <div style="font-size:10px;color:var(--muted);text-align:center;padding:20px;">
@@ -456,10 +473,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
     </div>
   </div>
 
-  <!-- ── CANVAS ── -->
+  <!-- -- CANVAS -- -->
   <div class="canvas-area">
     <div class="canvas-toolbar">
-      <span class="canvas-toolbar-label" id="canvasLabel">PC Build Assembly — Components</span>
+      <span class="canvas-toolbar-label" id="canvasLabel">PC Build Assembly � Components</span>
       <div class="hint-pill" id="hintPill">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="11" height="11"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
         <span id="hintText">Drag components from the left panel onto slots</span>
@@ -518,7 +535,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
 
       <!-- CABLE VIEW -->
       <div class="cable-canvas hide" id="cableCanvas">
-        <div class="cable-canvas-title">🔌 Back Panel & Cable Management</div>
+        <div class="cable-canvas-title">?? Back Panel & Cable Management</div>
         <div class="cable-zone-grid" id="cableZoneGrid"></div>
       </div>
 
@@ -530,7 +547,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
             <div class="screen-content" id="screenContent">
               <div style="background:#000;height:100%;display:flex;align-items:center;justify-content:center;">
                 <div style="text-align:center;color:#222;font-family:'DM Mono',monospace;">
-                  <div style="font-size:32px;margin-bottom:8px;">⏻</div>
+                  <div style="font-size:32px;margin-bottom:8px;">?</div>
                   <div style="font-size:11px;">PC is powered off</div>
                 </div>
               </div>
@@ -547,7 +564,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
     </div>
   </div>
 
-  <!-- ── RIGHT PANEL ── -->
+  <!-- -- RIGHT PANEL -- -->
   <div class="right-panel">
     <!-- Always-visible compatibility checker -->
     <div class="compat-sticky">
@@ -573,14 +590,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
           Build Progress
         </div>
         <div id="buildRows"></div>
-      </div>
-      <div class="rp-section">
-        <div class="rp-section-title">💰 Budget</div>
-        <div class="budget-bar-wrap">
-          <div class="budget-nums"><span>Spent: <strong id="spentAmt">₱0</strong></span><span>Limit: <strong id="limitAmt">Unlimited</strong></span></div>
-          <div class="budget-bar-track"><div class="budget-bar-fill" id="budgetBar" style="width:0%"></div></div>
-          <div class="budget-nums" style="justify-content:flex-end;"><span id="budgetPct"></span></div>
-        </div>
       </div>
       <div class="rp-section">
         <div class="rp-section-title">🔌 Cables Status</div>
@@ -624,7 +633,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
   </div>
 </div>
 
-<!-- ══════════════ INSTALLATION STEP MODAL ══════════════ -->
+<!-- -------------- INSTALLATION STEP MODAL -------------- -->
 <div class="overlay" id="installOverlay">
   <div class="modal install-modal">
     <button class="modal-close" onclick="cancelInstall()">
@@ -634,7 +643,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
   </div>
 </div>
 
-<!-- ══════════════ CABLE CONNECT MODAL ══════════════ -->
+<!-- -------------- CABLE CONNECT MODAL -------------- -->
 <div class="overlay" id="cableOverlay">
   <div class="modal" style="max-width:420px;">
     <button class="modal-close" onclick="closeCableModal()">
@@ -644,7 +653,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
   </div>
 </div>
 
-<!-- ══════════════ SCENARIO MODAL ══════════════ -->
+<!-- -------------- SCENARIO MODAL -------------- -->
 <div class="overlay" id="scenarioOverlay" onclick="if(event.target===this)closeScenarioModal()">
   <div class="modal" style="max-width:500px;">
     <button class="modal-close" onclick="closeScenarioModal()">
@@ -656,9 +665,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
     <div class="form-row">
       <div class="form-group"><label class="form-label">Build Tier</label>
         <select class="form-select" id="sc-tier">
-          <option value="">— Any —</option>
-          <option value="budget">Budget (≤$500)</option>
-          <option value="midrange">Mid-Range ($500–$1,200)</option>
+          <option value="">� Any �</option>
+          <option value="budget">Budget (=$500)</option>
+          <option value="midrange">Mid-Range ($500�$1,200)</option>
           <option value="highend">High-End ($1,200+)</option>
         </select>
       </div>
@@ -671,12 +680,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
       </div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Budget Limit (₱)</label><input class="form-input" id="sc-budget" type="number" placeholder="e.g. 15000" min="0"/></div>
       <div class="form-group"><label class="form-label">Time Limit (min)</label><input class="form-input" id="sc-time" type="number" placeholder="e.g. 30" min="1"/></div>
     </div>
-    <div class="form-group"><label class="form-label">Description</label><textarea class="form-textarea" id="sc-desc" placeholder="Describe the activity…"></textarea></div>
+    <div class="form-group"><label class="form-label">Description</label><textarea class="form-textarea" id="sc-desc" placeholder="Describe the activity..."></textarea></div>
     <div class="form-group"><label class="form-label">Objectives</label>
-      <div style="display:flex;gap:6px;margin-bottom:5px;"><input class="form-input" id="sc-obj-input" placeholder="Add objective…" onkeydown="if(event.key==='Enter'){addObj();event.preventDefault();}"/><button class="btn-sm btn-green" onclick="addObj()">Add</button></div>
+      <div style="display:flex;gap:6px;margin-bottom:5px;"><input class="form-input" id="sc-obj-input" placeholder="Add objective..." onkeydown="if(event.key==='Enter'){addObj();event.preventDefault();}" /><button class="btn-sm btn-green" onclick="addObj()">Add</button></div>
       <div id="sc-obj-list"></div>
     </div>
     <div style="display:flex;gap:8px;margin-top:8px;">
@@ -686,7 +694,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
   </div>
 </div>
 
-<!-- ══════════════ SUBMIT MODAL ══════════════ -->
+<!-- -------------- SUBMIT MODAL -------------- -->
 <div class="overlay" id="submitOverlay" onclick="if(event.target===this)closeSubmitModal()">
   <div class="modal" style="max-width:440px;">
     <button class="modal-close" onclick="closeSubmitModal()">

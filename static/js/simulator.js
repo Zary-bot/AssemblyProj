@@ -527,6 +527,7 @@ async function deleteBuildFromDatabase(buildId) {
 let currentCat = 'all';
 let currentSTab = 'comp';
 let activeRTab = 'build';
+let compSearchQuery = '';
 let timerInterval = null;
 let timerRunning = false;
 let timerSeconds = 0;
@@ -556,6 +557,11 @@ function switchSTab(tab, el) {
     compPanel.style.overflow = 'hidden';
     cablePanel.style.display = 'none';
     buildsPanel.style.display = 'none';
+    // Reset search when switching to components tab
+    compSearchQuery = '';
+    const searchInput = document.getElementById('compSearch');
+    if (searchInput) searchInput.value = '';
+    updateClearSearchButton();
   } else if(tab === 'cable') {
     compPanel.style.display = 'none';
     cablePanel.style.display = 'flex';
@@ -586,6 +592,26 @@ function filterCat(cat, el) {
   renderSidebar();
 }
 
+function onCompSearchChange(query) {
+  compSearchQuery = query.toLowerCase().trim();
+  updateClearSearchButton();
+  renderSidebar();
+}
+
+function clearComponentSearch() {
+  document.getElementById('compSearch').value = '';
+  compSearchQuery = '';
+  updateClearSearchButton();
+  renderSidebar();
+}
+
+function updateClearSearchButton() {
+  const clearBtn = document.getElementById('clearCompSearch');
+  if (clearBtn) {
+    clearBtn.style.display = compSearchQuery.length > 0 ? 'inline-flex' : 'none';
+  }
+}
+
 function renderSidebar() {
   const list = document.getElementById('sidebarList');
 
@@ -594,14 +620,29 @@ function renderSidebar() {
     return;
   }
 
-  const filtered = currentCat === 'all'
+  let filtered = currentCat === 'all'
     ? COMPONENTS
     : COMPONENTS.filter(c => c.cat === currentCat);
+
+  // Apply search filter
+  if (compSearchQuery) {
+    filtered = filtered.filter(c => {
+      const searchableFields = [
+        c.name || '',
+        c.brand || '',
+        c.sub || '',
+        c.cat || ''
+      ];
+      return searchableFields.some(field => 
+        String(field).toLowerCase().includes(compSearchQuery)
+      );
+    });
+  }
 
   if (!filtered || filtered.length === 0) {
     list.innerHTML = `
       <div style="font-size:10px;color:var(--muted);text-align:center;padding:20px;">
-        No components found for this category.
+        No components found${compSearchQuery ? ' matching your search' : ' for this category'}.
       </div>
     `;
     return;
@@ -629,8 +670,6 @@ function renderSidebar() {
           <div class="comp-name">${c.name}</div>
           <div class="comp-sub">${c.brand} · ${c.sub || 'Component'}</div>
         </div>
-
-        <div class="comp-price">₱${Number(c.price || 0).toLocaleString()}</div>
       </div>
     `;
   }).join('');
@@ -1548,7 +1587,6 @@ function switchRTab(tab, el) {
 
 function updateRightPanel() {
   renderBuildRows();
-  renderBudget();
   renderCableStatus();
   renderInstallGuide();
   if(activeRTab==='tasks') renderObjectives();
@@ -1592,21 +1630,6 @@ function renderBuildRows() {
   }).join('');
 }
 
-function renderBudget() {
-  const spent = SLOT_TYPES.reduce((s,t)=>s+(build[t]?build[t].price:0),0);
-  const limit = scenario&&scenario.budget?scenario.budget:0;
-  document.getElementById('spentAmt').textContent='$'+spent;
-  document.getElementById('limitAmt').textContent=limit?'$'+limit:'Unlimited';
-  const bar=document.getElementById('budgetBar');
-  const pctEl=document.getElementById('budgetPct');
-  if(limit){
-    const pct=Math.min((spent/limit)*100,100);
-    bar.style.width=pct+'%';
-    bar.classList.toggle('over',spent>limit);
-    pctEl.textContent=Math.round((spent/limit)*100)+'% of budget';
-    pctEl.style.color=spent>limit?'var(--red)':'var(--muted)';
-  } else { bar.style.width='0%'; pctEl.textContent=''; }
-}
 
 function renderCableStatus() {
   const el = document.getElementById('cableStatus');
@@ -2443,10 +2466,6 @@ function fixProblem(id) {
 function checkObjectives() {
   objectives.forEach(o=>{
     if(o.trigger && build[o.trigger]) o.done=true;
-    if(o.type==='budget') {
-      const spent=SLOT_TYPES.reduce((s,t)=>s+(build[t]?build[t].price:0),0);
-      if(scenario&&scenario.budget&&spent<=scenario.budget) o.done=true;
-    }
     if(o.trigger==='all_cables') {
       const req=CABLE_ZONES.filter(z=>z.required);
       if(req.every(z=>connectedCables[z.id])) o.done=true;
@@ -2535,9 +2554,8 @@ function renderPendingObjs() { document.getElementById('sc-obj-list').innerHTML=
 function applyScenario() {
   const name=document.getElementById('sc-name').value.trim();
   if(!name) { showToast('Enter a scenario name','err'); return; }
-  const budget=parseInt(document.getElementById('sc-budget').value)||0;
   const timeMin=parseInt(document.getElementById('sc-time').value)||0;
-  scenario={name,budget,tier:document.getElementById('sc-tier').value,type:document.getElementById('sc-type').value,desc:document.getElementById('sc-desc').value.trim()};
+  scenario={name,tier:document.getElementById('sc-tier').value,type:document.getElementById('sc-type').value,desc:document.getElementById('sc-desc').value.trim()};
   objectives=[...pendingObjs];
   if(objectives.length===0) {
     objectives=[
@@ -2550,10 +2568,9 @@ function applyScenario() {
       {text:'Connect all required cables',done:false,trigger:'all_cables'},
     ];
   }
-  if(budget>0) objectives.push({text:`Stay within ₱${budget} budget`,done:false,type:'budget'});
   if(timeMin>0) { timerTotal=timeMin*60; timerSeconds=0; updateTimerDisplay(); }
   document.getElementById('scenarioLabel').textContent=name;
-  document.getElementById('scenarioSummary').innerHTML=`<strong>${name}</strong><br/>Type: ${scenario.type} · Tier: ${scenario.tier||'Any'}<br/>Budget: ${budget?'₱'+budget:'Unlimited'} · Time: ${timeMin?timeMin+'min':'Unlimited'}<br/><em style="color:var(--faint);">${scenario.desc||'No description'}</em>`;
+  document.getElementById('scenarioSummary').innerHTML=`<strong>${name}</strong><br/>Type: ${scenario.type} · Tier: ${scenario.tier||'Any'}<br/>Time: ${timeMin?timeMin+'min':'Unlimited'}<br/><em style="color:var(--faint);">${scenario.desc||'No description'}</em>`;
   closeScenarioModal();
   checkObjectives();
   renderObjectives();
@@ -2568,7 +2585,6 @@ function openSubmitModal() {
   const filled=SLOT_TYPES.filter(t=>build[t]).length;
   const total=objectives.length;
   const done=objectives.filter(o=>o.done).length;
-  const spent=SLOT_TYPES.reduce((s,t)=>s+(build[t]?build[t].price:0),0);
   const grade=total>0?Math.round(75+(25*(done/total))):Math.round(75+(25*(filled/SLOT_TYPES.length)));
   const gradeColor=grade>=90?'#3ecf5e':grade>=80?'#f59e0b':'#ef4444';
 
@@ -2578,7 +2594,7 @@ function openSubmitModal() {
     <div class="grade-box">
       <div class="grade-pct" style="color:${gradeColor}">${grade}%</div>
       <div class="grade-label">${grade===100?'Perfect Build 🏆':grade>=90?'Excellent Work 🎉':grade>=80?'Great Job 👍':grade>=75?'Completed ✓':'Incomplete'}</div>
-      <div class="grade-breakdown">${total>0?`${done}/${total} objectives`:`${filled}/${SLOT_TYPES.length} components`} · Total: ₱${spent}</div>
+      <div class="grade-breakdown">${total>0?`${done}/${total} objectives`:`${filled}/${SLOT_TYPES.length} components`}</div>
     </div>
     <div style="max-height:200px;overflow-y:auto;">
       ${(total>0?objectives:SLOT_TYPES.map(t=>({text:SLOT_LABELS[t]+': '+(build[t]?build[t].name:'Not installed'),done:!!build[t]}))).map(o=>`
@@ -2593,16 +2609,12 @@ function openSubmitModal() {
 function closeSubmitModal() { document.getElementById('submitOverlay').classList.remove('open'); }
 
 async function saveToGallery(grade) {
-  const spent = SLOT_TYPES.reduce((s,t)=>s+(build[t]?Number(build[t].price || 0):0),0);
-
   // One save source only: Flask /api/builds -> database.py -> PostgreSQL.
   // No localStorage fallback and no gallery HTML file fallback.
   const buildData = {
     buildName: `Build Grade ${grade}%`,
     name: `Build Grade ${grade}%`,
     grade,
-    spent,
-    totalPrice: spent,
     components: build,
     connectedCables,
     user: userName,
@@ -2658,6 +2670,7 @@ async function initSimulator() {
   }
 
   currentCat = 'all';
+  compSearchQuery = '';
 
   document.querySelectorAll('.cat-tab').forEach(tab => {
     tab.classList.remove('active');
@@ -2667,6 +2680,13 @@ async function initSimulator() {
   if (allTab) {
     allTab.classList.add('active');
   }
+
+  // Clear search input on init
+  const compSearchInput = document.getElementById('compSearch');
+  if (compSearchInput) {
+    compSearchInput.value = '';
+  }
+  updateClearSearchButton();
 
   renderSidebar();
   renderCableList();

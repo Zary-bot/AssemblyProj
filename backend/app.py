@@ -114,6 +114,12 @@ def admin():
     return render_template("admin-dashboard.html")
 
 
+@app.route("/profile")
+def profile():
+    """Serve the user profile page."""
+    return render_template("profile.html")
+
+
 @app.route("/api/health")
 def health():
     return jsonify({"status": "ok", "message": "Flask backend is running"})
